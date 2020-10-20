@@ -1,0 +1,8 @@
+#################################################
+#             Acesso Servidores FTP             #
+#################################################
+
+reg.exe add "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Internet Settings\ZoneMap\EscRanges\Range1" /v :Range /t REG_SZ /d 172,16.16.10 /f
+reg.exe add "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Internet Settings\ZoneMap\EscRanges\Range1" /v ftp /t REG_DWORD /d 2 /f
+reg.exe add "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Internet Settings\ZoneMap\EscRanges\Range2" /v :Range /t REG_SZ /d 172,16.16.11 /f
+reg.exe add "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Internet Settings\ZoneMap\EscRanges\Range2" /v ftp /t REG_DWORD /d 2 /f
