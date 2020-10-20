@@ -1,0 +1,12 @@
+#################################################
+#   Criação de usuário local para gerencia1     #
+#################################################
+
+$Conta = "admin.empresa"
+$Descript = "Administrador da conta grupo Empresa"
+$Pass = Read-Host "Entre com a senha do usuário" -AsSecureString
+$Grupo = "Administrators"
+
+New-LocalUser -Name $Conta -Password $Pass -FullName $FullName -AccountNeverExpires -Confirm -Description $Descript -PasswordNeverExpires -UserMayNotChangePassword
+Add-LocalGroupMember -Group $Grupo -Member $Conta
+net user $Conta 
