@@ -1,0 +1,5 @@
+#################################################
+#        Instala o Telnet Client                #
+#################################################
+
+Install-WindowsFeature -Name "Telnet-Client"
