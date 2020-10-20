@@ -1,0 +1,11 @@
+#################################################
+#   Criação de usuário local para gerencia2     #
+#################################################
+
+net user "admin.cliente" /delete
+net user "admin.cliente" "123Mudar$" /add /comment:"admin.cliente"
+# wmic useraccount where "admin.cliente" set passwordexpires=false
+net localgroup Administrators admin.cliente /add
+net localgroup Users admin.cliente /delete
+net localgroup Administrators admin.cliente /add
+# net localgroup Usuarios admin.cliente /delete
