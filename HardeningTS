@@ -1,0 +1,40 @@
+#################################################
+#               Segurança de TS                 #
+#################################################
+
+reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Terminal Server" /v fDenyTSConnections /t REG_DWORD /d 0 /f
+reg.exe add "HKLM\Software\Policies\Microsoft\Windows NT\Terminal Services" /v FdisableClip /t REG_DWORD /d 0 /f
+reg.exe add "HKLM\Software\Microsoft\Windows NT\CurrentVersion\Winlogon" /v PasswordExpiryWarning /t REG_DWORD /d 7 /f
+reg.exe add "HKLM\System\CurrentControlSet\Control\Lsa" /v NoLMHash /t REG_DWORD /d 1 /f
+reg.exe add "HKLM\System\CurrentControlSet\Services\LanmanServer\Parameters" /v NullSessionPipes /t REG_MULTI_SZ /d "" /f
+reg.exe add "HKLM\System\CurrentControlSet\Control\LSA" /v RestrictAnonymous /t REG_DWORD /d 1 /f
+reg.exe add "HKLM\Software\Policies\Microsoft\Windows NT\Terminal Services" /v DisablePasswordSaving /t REG_DWORD /d 1 /f
+reg.exe add "HKLM\System\CurrentControlSet\Services\LanmanServer\Parameters" /v AutoDisconnect /t REG_DWORD /d 15 /f
+reg.exe add "HKLM\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer" /v NoDriveTypeAutoRun /t REG_DWORD /d 255 /f
+reg.exe add "HKLM\System\CurrentControlSet\Control\LSA" /v RestrictAnonymousSAM /t REG_DWORD /d 1 /f
+reg.exe add "HKLM\System\CurrentControlSet\Services\Cdrom" /v AutoRun /t REG_DWORD /d 0 /f
+reg.exe add "HKLM\Software\Microsoft\Windows NT\CurrentVersion\Winlogon" /v AutoAdminLogon /t REG_SZ /d 0 /f
+reg.exe add "HKLM\Software\Microsoft\Windows NT\CurrentVersion\Setup\RecoveryConsole" /v SecurityLevel /t REG_DWORD /d 0 /f
+reg.exe add "HKLM\Software\Microsoft\Windows NT\CurrentVersion\Winlogon" /v DisableCAD /t REG_DWORD /d 0 /f
+reg.exe add "HKLM\System\CurrentControlSet\Control\Lsa" /v ForceGuest /t REG_DWORD /d 0 /f
+reg.exe add "HKLM\System\CurrentControlSet\Control\Session Manager\Kernel" /v ObCaseInsensitive /t REG_DWORD /d 1 /f
+reg.exe add "HKLM\System\CurrentControlSet\Services\LDAP" /v LDAPClientIntegrity /t REG_DWORD /d 1 /f
+reg.exe add "HKLM\System\CurrentControlSet\Services\Netlogon\Parameters" /v DisablePasswordChange /t REG_DWORD /d 0 /f
+reg.exe add "HKLM\Software\Microsoft\Windows\CurrentVersion\Policies\System" /v HideShutdownScripts /t REG_DWORD /d 0 /f
+reg.exe add "HKLM\Software\Microsoft\Windows\CurrentVersion\Policies\System" /v HideStartupScripts /t REG_DWORD /d 0 /f
+reg.exe add "HKLM\System\CurrentControlSet\Control\Lsa" /v FullPrivilegeAuditing /t REG_BINARY /d 1 /f
+reg.exe add "HKLM\Software\Microsoft\Windows NT\CurrentVersion\Winlogon" /v ScRemoveOption /t REG_SZ /d 1 /f
+reg.exe add "HKLM\System\CurrentControlSet\Control\Lsa" /v SecureBoot /t REG_DWORD /d 1 /f
+reg.exe add "HKLM\System\CurrentControlSet\Control\Session Manager" /v SafeDllSearchMode /t REG_DWORD /d 1 /f
+reg.exe add "HKLM\System\CurrentControlSet\Services\Netlogon\Parameters" /v SealSecureChannel /t REG_DWORD /d 1 /f
+reg.exe add "HKLM\System\CurrentControlSet\Control\Terminal Server" /v TSUserEnabled /t REG_DWORD /d 0 /f
+reg.exe add "HKLM\Software\Microsoft\Windows NT\CurrentVersion\Setup\RecoveryConsole" /v SetCommand /t REG_DWORD /d 0 /f
+reg.exe add "HKLM\System\CurrentControlSet\Services\LanmanWorkstation\Parameters" /v EnablePlainTextPassword /t REG_DWORD /d 0 /f
+reg.exe add "HKLM\System\CurrentControlSet\Control\Session Manager\Memory Management" /v ClearPageFileAtShutdown /t REG_DWORD /d 0 /f
+reg.exe add "HKLM\Software\Microsoft\Windows NT\CurrentVersion\Winlogon" /v DontDisplayLastUserName /t REG_SZ /d 1 /f
+reg.exe add "HKLM\System\CurrentControlSet\Control\Lsa" /v LimitBlankPasswordUse /t REG_DWORD /d 1 /f
+reg.exe add "HKLM\System\CurrentControlSet\Services\LanmanServer\Parameters" /v RestrictNullSessAccess /t REG_DWORD /d 1 /f
+reg.exe add "HKLM\Software\Microsoft\Windows NT\CurrentVersion\Winlogon" /v ShutdownWithoutLogon /t REG_SZ /d 0 /f
+reg.exe add "HKLM\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-TCP" /v fPromptforPassword /t REG_DWORD /d 1 /f
+sc.exe config SSDPSRV start= disabled
+sc.exe config "Fax Discovery" start= disabled
