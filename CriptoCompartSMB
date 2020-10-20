@@ -1,0 +1,19 @@
+#################################################
+#      Criptografar compartilhamento SMB        #
+#################################################
+
+# Para criptografar todos os compartilhamentos em um servidor de arquivos, no prompt de comando do Windows PowerShell, no servidor, digite o seguinte cmdlet e pressione Enter:
+Set-SmbServerConfiguration –EncryptData $true
+
+# Para criar um novo compartilhamento de arquivo e habilitar a criptografia SMB simultaneamente, abra um prompt de comando do Windows PowerShell, digite o seguinte cmdlet e pressione Enter:
+New-SmbShare –Name <sharename> -Path <pathname> –EncryptData $true
+
+# No Gerenciador do Servidor, Serviços de Arquivo e Armazenamento, você pode habilitar a criptografia em um compartilhamento pela página Gerenciamento de compartilhamentos:
+
+# 1. Clique com o botão direito do mouse no compartilhamento em questão e clique em Propriedades.
+# 2. Na página Configurações, clique em Criptografar acesso aos dados.
+
+# Para permitir conexões que não usem criptografia SMB 3, tal como quando servidores e clientes mais antigos continuam na sua rede, abra um prompt de comando do Windows PowerShell, digite o seguinte cmdlet e pressione Enter:
+Set-SmbServerConfiguration –RejectUnencryptedAccess $false 
+
+Get-smbshare
