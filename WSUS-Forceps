@@ -1,0 +1,18 @@
+#################################################
+#                 Forçar WSUS                   #
+#################################################
+
+@ echo Off
+Echo Stopping WU service
+net stop wuauserv
+Echo Deleting Windows Updates
+rd /s /q %windir%\SoftwareDistribution
+Echo Starting WU Service
+net start wuauserv
+Echo Detecting WSUS Server
+wuauclt /detectnow
+Echo Reporting to WSUS Server
+wuauclt.exe /reportnow
+Echo WAIT 10 MINUTES FOR  CLIENT TO REPORT 
+pause
+exit
