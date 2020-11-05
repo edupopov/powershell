@@ -1,0 +1,38 @@
+# Testando conectividade
+# Por Guido Oliveira
+# Powershell temos o Test-NetConnection que pode ser utilizado para testar serviços remotos sendo possivel especificar a porta, diferentemente do Ping:
+
+Test-NetConnection -ComputerName guidooliveira.com -Port 443
+
+# Após inciciar o teste de conexão iremos aguardar o retorno de forma assíncrona especificando o timeout de 1 segundo, 
+# especificado em milisegundos no primeiro argumento. Ao validar o retorno podemos determinar se a conexão foi feita 
+# ou não com sucesso e chamar o método Close() e Dispose() para liberar os recursos de memória alocados para o objeto, evitando assim algum vazamento de memória.
+
+$TCPClient = New-Object -TypeName System.Net.Sockets.TcpClient
+$Connection = $TCPClient.BeginConnect('guidooliveira.com','443',$null,$null)
+$Wait = $Connection.AsyncWaitHandle.WaitOne('1000',$false)
+
+if(-not($wait)){
+    $tcpobject.Close()
+    [PSCustomObject]@{
+        Online = $false
+        Message = 'Timeout'
+    }
+}
+else{
+    try {
+        $null = $TCPClient.EndConnect($Connection)
+        [PSCustomObject]@{
+            Online = $true
+            Message = 'Connection Succeeded'
+        }
+    }
+    catch {
+        [PSCustomObject]@{
+            Online = $false
+            Message = 'Timeout'
+        }
+    }
+    $TCPClient.Close()
+}
+$TCPClient.Dispose()
