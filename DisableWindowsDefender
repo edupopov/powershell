@@ -1,0 +1,2 @@
+# Para desabilitar o Windows Defender 
+Set-MpPreference -DisableRealtimeMonitoring $true
