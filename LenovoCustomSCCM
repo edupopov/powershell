@@ -1,0 +1,49 @@
+$Model = gwmi -Class Win32_ComputerSystemProduct
+
+## Laptop
+if ($Model.version.TrimEnd() -like "*ThinkPad*")
+{
+    #enable TPM
+
+
+    $TMP = Get-WmiObject -Class Lenovo_BiosSetting -Namespace root\wmi -Filter "CurrentSetting like 'Security%'" 
+
+    if( $TMP.CurrentSetting -like "*Inactive*")
+    {
+        (gwmi -class Lenovo_SetBiosSetting –namespace root\wmi).SetBiosSetting("SecurityChip,Active")
+    }
+    else
+    {
+        (gwmi -class Lenovo_SetBiosSetting –namespace root\wmi).SetBiosSetting("SecurityChip,Enable")
+    }
+
+    #save settings
+    (gwmi -class Lenovo_SaveBiosSettings -namespace root\wmi).SaveBiosSettings('')
+
+}
+
+## Desktop
+if ($Model.version.TrimEnd() -like "*ThinkCentre*")
+{
+    #enable TPM
+    (gwmi -class Lenovo_SetBiosSetting –namespace root\wmi).SetBiosSetting("TCG Security Feature,Active")
+    (gwmi -class Lenovo_SetBiosSetting –namespace root\wmi).SetBiosSetting("Security Chip 2.0,Active")
+
+    #save settings
+    (gwmi -class Lenovo_SaveBiosSettings -namespace root\wmi).SaveBiosSettings('')
+}
+
+
+#(Get-WMIObject -Namespace root/cimv2/Security/MicrosoftTPM -class Win32_TPM).SetPhysicalPresenceRequest(10)
+
+#(gwmi -class Lenovo_SetBiosSetting –namespace root\wmi).SetBiosSetting("ATpModuleActivation,Enable")
+#(gwmi -class Lenovo_SetBiosSetting –namespace root\wmi).SetBiosSetting("PhysicalPresenceForTpmClear,Enable")
+#(gwmi -class Lenovo_SetBiosSetting –namespace root\wmi).SetBiosSetting("PhysicalPresenceForTpmProvision,Enable")
+#(gwmi -class Lenovo_SaveBiosSettings -namespace root\wmi).SaveBiosSettings()
+
+#Get-Tpm
+
+#Get-WmiObject -Class Win32_TPM -Namespace root/cimv2/Security/MicrosoftTPM
+
+
+##gwmi -class Lenovo_BiosSetting -namespace root\wmi | ForEach-Object {if ($_.CurrentSetting -ne "") {Write-Host $_.CurrentSetting.replace(","," = ")}}
