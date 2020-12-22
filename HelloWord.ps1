@@ -1,4 +1,4 @@
-﻿Get-Command #Lista de comandos
+Get-Command #Lista de comandos
 Get-Command -CommandType Cmdlet #traga na tela os commandlets
 $PSVersionTable.PSVersion #mostra a versão do powershell
 (Get-host).Version #Permite ver a versão do powershell também em um host remoto
@@ -31,3 +31,17 @@ Get-Command -Module Defender # Lista os parametros para o Windows Defender # A e
 Get-PSRepository # Mostra os repositórios
 Install-Module -Name Az.Accounts -Force # Força a isntação do módulo pelo repositório PSGallery
 Install-Module -Name AWSPowerShell -Force #Instala o módulo de manutenção da AWS
+Select-String
+Get-Content # Permite ler o conteúdo de um arquivo de texto
+Get-Content .\bancos.txt | Select-String ITAU # Procura dentro de um arquivo de texto a string ITAU
+Get-Content .\bancos.txt | Select-String ITAU, BRADESCO, SANTANDER # Ao adicionar virgula após a string ITAU, posso buscar outras strings específicas 
+Select-String -Pattern Santo .\Municipios.txt # Procura uma string específica sob um padrão único dentro do arquivo municipios.txt
+Get-ChildItem .\*.txt # Encontra tudo o que for arquivo .txt
+Select-String -Path "senha.txt" -Pathern guest # Procura dentro de um arquivo de senhas a string guest
+Select-String -Path "senha.txt" -Pathern Administrator -NotMatch # Esta linha trará tudo o que não estiver relacioando a sring Administrador
+Enable-PSRemoting # Libera acesso remoto para o servidor ou estação de trabalho
+Get-HotFix # Mostra os hotfix instalados
+Get-HotFix -id KB4343898 # Mostra se esse KB esta instalado 
+Invoke-Command -ComputerName SRV-02 -ScriptBlock {Get-HotFix -id KB434389} # Esta linha de comando identifica se a máquina remotamente, possui o KB instalado
+Enter-PSSession SRV-02 # Estabelece uma sessão remota persistente
+Get-Host # Trás insformações do host conectado
