@@ -45,3 +45,11 @@ Get-HotFix -id KB4343898 # Mostra se esse KB esta instalado
 Invoke-Command -ComputerName SRV-02 -ScriptBlock {Get-HotFix -id KB434389} # Esta linha de comando identifica se a máquina remotamente, possui o KB instalado
 Enter-PSSession SRV-02 # Estabelece uma sessão remota persistente
 Get-Host # Trás insformações do host conectado
+winrm set winrm/config/client @{TrustedHost="SRV-02"} # Adiciona a lista de computadores confiáveis para acesso remoto
+Get-Item WSMan:\localhost\Client\TrustedHosts # Pesquisa hosts confiáveis
+Enable-PSRemoting -Confirm # Habilita a conexão remota 
+Set-Item WSMan:\localhost\Client\TrustedHosts "Cliente-host" # Adiciona a estação cliente a lista de equipamentos confiáveis
+Set-Item WSMan:\localhost\Client\TrustedHosts "OutroClinete" -Concatenate # Permite adicionar mais de um equipamento a lista de máquinas confiávei
+Set-Item WSMan:\localhost\Client\TrustedHosts "*" # Qualquer um pode se conectar a este computador remotamente 
+New-PSSession -ComputerName SRV-02 -Credential dominio\usuario_com_permissao # Se conecta remotamente a um servidor após declarar a máquina como confiável
+Enter-PSSession -Id 2 # Acessa uma sessão remota utilizando o ID Name disponível
