@@ -1,0 +1,29 @@
+# Agendando Jobs
+# Criado 03 variáveis para ajudar com os exemplos
+# Script de criação de backups
+# Para visualizar o job, abra o agendador de tarefas do windows e navegue até Windows, powershell, schedulejobs
+
+Clear-Host # Limpa a tel para a próxima execução
+
+Get-Command -Module PSScheduledJob | Sort-object Noun # Mostra as informações relacionadas ao Modulo PSSchedulejob e seus types
+
+$diario = New-JobTrigger -Daily -at 3am # Variável que armazena a trigger diária
+$umavez = New-JobTrigger -Once -at (get-date).AddHours(1) # Variável que armazena a trigger uma única vez
+$semana1 = New-JobTrigger -Weekly -DaysOfWeek Monday -at 6pm # variável que armazena o bkp semanal
+
+# Bloco que registra a criação do job
+Register-ScheduledJob -Name Backup -Trigger $diario -ScriptBlock {
+#Copy-Item c:\pasta01\*.* c:\pasta02\ -Recurse -Force
+robocopy D:\ G:\BACKUP /ZB /R:0 /W:0 /COPYALL /MIR /ts /tee /log+:c:\logrobocopy\log_BACKUP.txt
+# /ZB :: usar o modo reinici vel; se o acesso for negado,
+# /R:n :: n£mero de Repeti‡äes em c¢pias com falhas: o padrÆo ‚ 1 milhÆo.
+# /W:n :: tempo de espera entre as repeti‡äes: o padrÆo‚ 30 segundos.
+# /COPYALL :: COPIAR TODAS as informa‡äes do arquivo (equivalente a /COPY:DATSOU).
+# /MIR :: espelhar uma árvore de diret¢rios (equivalente a /E mais /PURGE).
+# /TS :: incluir carimbo de data/hora no arquivo de origem na sa¡da.
+# /TEE :: sa¡da para janela de console, assim como arquivo de log.
+/LOG+:arquivo :: status de sa¡da para arquivos de log (anexar a log existente).
+}
+
+# esta linha permite remover - desregistrar o backup 
+# Get-ScheduledJob Backup | Unregister-ScheduledJob
