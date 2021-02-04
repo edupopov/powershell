@@ -1,0 +1,10 @@
+$Chrome = Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | select DisplayName,DisplayVersion | where {$_.DisplayName -like "Google Chrome"}
+
+if ($Chrome.DisplayVersion -like "86.0.4240.183")
+{
+Write-Host "Google Chrome version 86.0.4240.183"
+}
+else
+{
+Write-Host "Google Chrome version $Chrome.DisplayVersion"
+}
