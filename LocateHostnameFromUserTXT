@@ -1,0 +1,11 @@
+$computers = Get-Content \\path\to\hostnames.txt
+
+foreach ($computer in $computers) {
+     $wmi = Get-WmiObject -ComputerName $computer -Class win32_computersystem
+     $output = [ordered]@{
+          Host = $computer
+          User = $wmi.username
+     }
+     $report = New-Object -TypeName PSObject -Property $output
+     Write-Output $report
+}
