@@ -1,0 +1,5 @@
+# Verifica AutoShareWks no Registro do Windows
+$registro = "HKLM:\SYSTEM\CurrentControlSet\services\LanmanServer\Parameters"
+$nome = "AutoShareWks"
+$valor = "1"
+$AutoShareWks = Get-ItemProperty -Path $registro -Name $nome -ErrorAction SilentlyContinue
