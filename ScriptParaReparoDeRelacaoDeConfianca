@@ -1,0 +1,20 @@
+# Reparo de relação de confiança entre estação de trabalho e o domínio
+# Script pode ser utilizado tanto por GPO quanto por SCCM
+# Script by Eduardo Popovici
+
+# Set-ExecutionPolicy Unrestricted - Use com moderação
+# Get-ExecutionPolicy - Valida qual é a permissão atual de execução de scrpts no equipamento
+
+Clear
+
+${data-atual} = (get-date).Date
+${test-channel} = test-computersecurechannel -verbose
+#${reset-channel} = Reset-ComputerMachinePassword
+
+if(${test-channel} -eq "True" ){
+    Write-Output "Relação de confiança validada em ${data-atual}"
+    }	
+    Else
+    { 
+    test-computersecurechannel -repair -verbose
+    }
