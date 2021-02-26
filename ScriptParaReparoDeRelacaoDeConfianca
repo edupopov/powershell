@@ -14,6 +14,9 @@ Clear
 # Coleta e modificação do timestamp
 # ${time-stamp} = Get-Date -Format o | ForEach-Object { $_ -replace ":", "." }
 
+# Coleta o último logon
+# Get-ADUser pcontreras -Properties lastLogon | Select samaccountname, @{Name="lastLogon";Expression={[datetime]::FromFileTime($_.'lastLogon')}}
+
 # Coleta da data atual
 ${data-atual} = (Get-Date).Date
 
