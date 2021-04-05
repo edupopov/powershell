@@ -1,0 +1,73 @@
+#******* Format to access Input Parameters *******
+# To use variable, prefix with '$'. eg. $message
+# Read more https://docs.servicenow.com/?context=CSHelp:IntegrationHub-PowerShell-Step
+
+#******* Reserved variables available when remoting type is Run on MID
+# $computer   Host IP resolved from Connection alias
+# $cred       Credential Object. Credential resolved via connection alias or credential alias. This can be used in conjunction with any cmd-let which support credential parameter eg. New-PSSession -credential $cred
+# $log_info   mid property "mid.property.powershell.log_info" set on instance to enable debugging. So it's a flag available to act on and add any verbose logging if they want to in their script
+
+#******* Format to access Input Parameters *******
+# To use variable, prefix with '$'. eg. $message
+# Read more https://docs.servicenow.com/?context=CSHelp:IntegrationHub-PowerShell-Step
+
+#******* Reserved variables available when remoting type is Run on MID
+# $computer   Host IP resolved from Connection alias
+# $cred       Credential Object. Credential resolved via connection alias or credential alias. This can be used in conjunction with any cmd-let which support credential parameter eg. New-PSSession -credential $cred
+# $log_info   mid property "mid.property.powershell.log_info" set on instance to enable debugging. So it's a flag available to act on and add any verbose logging if they want to in their script
+
+param([string]$controle_it,$ScriptName = "GPUpdate")
+
+if (test-path env:\SNC_controle_it) {
+  $controle_it  += $env:SNC_controle_it;
+}
+
+# Import SCCM module
+Import-Module "$executingScriptDirectory\SCCMSpoke\SCCMMain" -DisableNameChecking
+
+
+SNCLog-ParameterInfo @("Running GPUpdate", $controle_it)
+
+function GPUpdatecommand(){
+    Import-Module -Name "$(split-path $Env:SMS_ADMIN_UI_PATH)\ConfigurationManager.psd1"
+    Set-Location -path "$(Get-PSDrive -PSProvider CMSite):\";
+    $controle_ti = $args[0]; 
+    $Command = $args[1];
+
+    # Pré-avaliação
+    $Marcador = "Inativa"
+    $Device = Get-CMDevice -Name $controle_ti;
+    if($Device){
+        if($Device.IsClient -like "TRUE" -and $Device.IsActive -like "TRUE"){
+            $Marcador = "Ativa"
+        }
+    }
+
+    # Execução
+    If($Marcador -like "Ativa"){
+        $ScriptObj = Get-CMScript -ScriptName $Command -Fast;
+        $RunScript = Invoke-CMScript -InputObject $ScriptObj -Device $Device;
+    }
+    # Avaliação e Retorno
+    If($Marcador -like "Inativa"){
+        Write-Host -ForegroundColor Red "Equipamento inativo ou sem agente do SCCM."
+    }
+
+    Else{
+        Write-host -ForegroundColor Green "GPUpdate em concluído"
+    }
+    }
+
+try {
+    $session = Create-PSSession -sccmServerName $computer -credential $cred;
+    Write-Host $properties, $ScriptName;
+    Invoke-Command -Session $session -ScriptBlock ${function:GPUpdatecommand} -ArgumentList ($controle_it, $ScriptName);
+    
+
+} catch {
+    Write-Host $error
+} finally {
+    if($session -ne $null) {
+        Remove-PSSession -session $session
+    }
+}
