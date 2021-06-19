@@ -1,3 +1,4 @@
+#Corrigir WindowsDanificado - Arquivos importantes
 @echo off
 sc config winmgmt start= disabled
 net stop winmgmt /y
