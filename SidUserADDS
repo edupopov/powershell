@@ -1,0 +1,3 @@
+@echo off
+cls
+dsquery user "cn=donda, ou=visitantes, ou=usuarios, dc=br, dc=la, dc=clearchannel, dc=com" | dsget user -sid
