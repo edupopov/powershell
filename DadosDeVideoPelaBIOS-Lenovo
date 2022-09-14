@@ -1,0 +1,10 @@
+Get-wmiobject -Class Win32_BIOS -Computername .
+gwmi -class Lenovo_BiosSetting -namespace root\wmi select-object currentsetting
+gwmi -class Lenovo_BiosSetting -namespace root\wmi | Where-Object {$_.CurrentSetting.split(",",[StringSplitOptions]::RemoveEmptyEntries) -eq "UMAFramebufferSize"} | Format-List CurrentSetting
+(gwmi -class Lenovo_SetBiosSetting -namespace root\wmi).SetBiosSetting("UMAFramebufferSize,256MB")
+(gwmi -class Lenovo_SaveBiosSettings -namespace root\wmi).SaveBiosSettings()
+
+# Pesquisa de classes
+# $SettingList = Get-WmiObject -Namespace root\wmi -Class Lenovo_BiosSetting
+# $SettingList | Select-Object CurrentSetting
+gwmi -class Lenovo_BiosSetting -namespace root\wmi | ForEach-Object {if ($_.CurrentSetting -ne "") {Write-Host $_.CurrentSetting.replace(","," = ")}}
