@@ -1,0 +1,174 @@
+net stop NMServiceManager
+net stop NMServiceManager
+
+
+msiexec /quiet /uninstall 6B2F5990-7480-4A41-A149-F2A8F4CF38B4
+msiexec /quiet /uninstall 89671C10-0AA6-4FB7-9C60-D668554F4910
+msiexec /quiet /uninstall 919C2F70-0993-4BBB-90FD-BE735198F353
+msiexec /quiet /uninstall 0BF2CFD0-0F3B-4ED8-8820-079BFEF9810F
+msiexec /quiet /uninstall 4B4752B1-C8EB-4C19-B76D-6E9DA05609F3
+msiexec /quiet /uninstall 3FD6EBF1-19F7-4982-ADA2-594B6E0A8CA5
+msiexec /quiet /uninstall 123BA923-42DB-4082-8729-1D80689DB4CA
+msiexec /quiet /uninstall 13280383-BA45-461C-8CD5-5C39C103DBF9
+msiexec /quiet /uninstall 2013C3A6-8957-446B-AECE-87471E9105AA
+msiexec /quiet /uninstall FB211AA6-1295-4AAD-9390-9BFC84C20EA8
+msiexec /quiet /uninstall 691EEDA7-5D13-45F9-B2DC-5331F50170E4
+msiexec /quiet /uninstall D02BFD4A-0603-40D7-96AD-76064095EB61
+msiexec /quiet /uninstall 6773E18D-723C-4D4C-A45B-C81CD5F00FD7
+msiexec /quiet /uninstall FFDAB6AD-93ED-4150-91AB-1332E0E3661A
+msiexec /quiet /uninstall 76E8EFBD-2930-451B-8534-B8690BE88FD2
+msiexec /quiet /uninstall BAB5DF7F-A3EA-4644-A6EC-AD11674805A5
+msiexec /quiet /uninstall 74B1481B-D474-4F16-8EA6-E18090667A7D
+msiexec /quiet /uninstall CF695844-7E0D-4749-8B75-1A8C81C0E4C0
+
+msiexec /quiet /uninstall 6B2F5990-7480-4A41-A149-F2A8F4CF38B4
+msiexec /quiet /uninstall 89671C10-0AA6-4FB7-9C60-D668554F4910
+msiexec /quiet /uninstall 919C2F70-0993-4BBB-90FD-BE735198F353
+msiexec /quiet /uninstall 0BF2CFD0-0F3B-4ED8-8820-079BFEF9810F
+msiexec /quiet /uninstall 4B4752B1-C8EB-4C19-B76D-6E9DA05609F3
+msiexec /quiet /uninstall 3FD6EBF1-19F7-4982-ADA2-594B6E0A8CA5
+msiexec /quiet /uninstall 123BA923-42DB-4082-8729-1D80689DB4CA
+msiexec /quiet /uninstall 13280383-BA45-461C-8CD5-5C39C103DBF9
+msiexec /quiet /uninstall 2013C3A6-8957-446B-AECE-87471E9105AA
+msiexec /quiet /uninstall FB211AA6-1295-4AAD-9390-9BFC84C20EA8
+msiexec /quiet /uninstall 691EEDA7-5D13-45F9-B2DC-5331F50170E4
+msiexec /quiet /uninstall D02BFD4A-0603-40D7-96AD-76064095EB61
+msiexec /quiet /uninstall 6773E18D-723C-4D4C-A45B-C81CD5F00FD7
+msiexec /quiet /uninstall FFDAB6AD-93ED-4150-91AB-1332E0E3661A
+msiexec /quiet /uninstall 76E8EFBD-2930-451B-8534-B8690BE88FD2
+msiexec /quiet /uninstall BAB5DF7F-A3EA-4644-A6EC-AD11674805A5
+msiexec /quiet /uninstall 74B1481B-D474-4F16-8EA6-E18090667A7D
+msiexec /quiet /uninstall CF695844-7E0D-4749-8B75-1A8C81C0E4C0
+
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts" /v "FTP Wy (TrueType)" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts" /v "FTP Wy Bold (TrueType)" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts" /v "MFSansSerifMonoMedium (TrueType)" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts" /v "Monospace 821 Ansi BT (TrueType)" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts" /v "Monospace 821 Dec Left BT (TrueType)" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts" /v "Monospace 821 Dec Multi BT (TrueType)" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts" /v "Monospace 821 Dec Rt BT (TrueType)" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts" /v "Monospace 821 Dec Spec BT (TrueType)" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts" /v "Monospace 821 Dec Tech BT (TrueType)" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts" /v "NetSoft Regular (TrueType)" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts" /v "RUMBA 3812 Symbols (TrueType)" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts" /v "Rumba VT (TrueType)" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts" /v "RumbaICLSpe BT (TrueType)" /f
+
+for /d %%G in (c:\users\*) DO (rd /s /q "%%G\AppData\Local\Micro Focus")
+for /d %%G in (c:\users\*) DO (rd /s /q "%%G\AppData\Roaming\Micro Focus")
+
+rd /q /s "C:\Program Files (x86)\Micro Focus"
+rd /q /s "C:\Program Files\Micro Focus"
+del /q /f "C:\Users\Public\Desktop\OnWeb Web-to-Host.url"
+del /q /f "C:\Users\Public\Desktop\OnWeb Web-to-Host Contigência.lnk"
+del /s /q /f %WinDir%\System32\wdloader.dll
+del /s /q /f %WinDir%\System32\wdntmap.dll
+
+
+reg delete "HKEY_CURRENT_USER\Software\WallData" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\WALLDATA" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\WallData" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\NetManage" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Micro Focus" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\NetManage" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Micro Focus" /f
+reg delete "HKEY_USERS\.DEFAULT\Software\WallData" /f
+
+reg delete "HKEY_LOCAL_MACHINE\SYSTEM\ControlSet001\Services\NMServiceManager" /f
+reg delete "HKEY_LOCAL_MACHINE\SYSTEM\ControlSet002\Services\NMServiceManager" /f
+reg delete "HKEY_LOCAL_MACHINE\SYSTEM\ControlSet003\Services\NMServiceManager" /f
+
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{0259B539-DC02-419A-B8E1-3F739986BFFC}" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{0BF2CFD0-0F3B-4ED8-8820-079BFEF9810F}" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{123BA923-42DB-4082-8729-1D80689DB4CA}" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{13280383-BA45-461C-8CD5-5C39C103DBF9}" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{151381FF-3DA9-4940-8273-73AB1B5C1D5E}" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{2013C3A6-8957-446B-AECE-87471E9105AA}" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{3FD6EBF1-19F7-4982-ADA2-594B6E0A8CA5}" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{41C91FEC-4179-4F51-ADED-8C869C626DD9}" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{45C91FEC-4179-4F51-ADED-8C869C626DD9}" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{46C91FEC-4179-4F51-ADED-8C869C626DD9}" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{47C91FEC-4179-4F51-ADED-8C869C626DD9}" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{4B4752B1-C8EB-4C19-B76D-6E9DA05609F3}" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{625A88AC-C0C9-41F5-B52A-DAAF1A5C0C81}" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{6773E18D-723C-4D4C-A45B-C81CD5F00FD7}" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{691EEDA7-5D13-45F9-B2DC-5331F50170E4}" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{76E8EFBD-2930-451B-8534-B8690BE88FD2}" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{7A838A07-8C57-490C-B997-FB48E1D68601}" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{919C2F70-0993-4BBB-90FD-BE735198F353}" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{BAB5DF7F-A3EA-4644-A6EC-AD11674805A5}" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{C6786B80-BC3F-49DA-982B-605E9486516E}" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{C8620165-424B-48DE-8FD2-7C50C87A52A0}" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{CF695844-7E0D-4749-8B75-1A8C81C0E4C0}" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{D02BFD4A-0603-40D7-96AD-76064095EB61}" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{D36DEC68-4C0A-4487-B4C9-C822FD79B4AA}" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{FB211AA6-1295-4AAD-9390-9BFC84C20EA8}" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{FFDAB6AD-93ED-4150-91AB-1332E0E3661A}" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\{6B2F5990-7480-4A41-A149-F2A8F4CF38B4}" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\{89671C10-0AA6-4FB7-9C60-D668554F4910}" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\{919C2F70-0993-4BBB-90FD-BE735198F353}" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\{0BF2CFD0-0F3B-4ED8-8820-079BFEF9810F}" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\{4B4752B1-C8EB-4C19-B76D-6E9DA05609F3}" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\{3FD6EBF1-19F7-4982-ADA2-594B6E0A8CA5}" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\{123BA923-42DB-4082-8729-1D80689DB4CA}" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\{13280383-BA45-461C-8CD5-5C39C103DBF9}" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\{2013C3A6-8957-446B-AECE-87471E9105AA}" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\{FB211AA6-1295-4AAD-9390-9BFC84C20EA8}" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\{691EEDA7-5D13-45F9-B2DC-5331F50170E4}" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\{D02BFD4A-0603-40D7-96AD-76064095EB61}" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\{6773E18D-723C-4D4C-A45B-C81CD5F00FD7}" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\{FFDAB6AD-93ED-4150-91AB-1332E0E3661A}" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\{76E8EFBD-2930-451B-8534-B8690BE88FD2}" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\{BAB5DF7F-A3EA-4644-A6EC-AD11674805A5}" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\{74B1481B-D474-4F16-8EA6-E18090667A7D}" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\{CF695844-7E0D-4749-8B75-1A8C81C0E4C0}" /f
+
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts" /v "FTP Wy (TrueType)" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts" /v "FTP Wy Bold (TrueType)" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts" /v "MFSansSerifMonoMedium (TrueType)" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts" /v "Monospace 821 Ansi BT (TrueType)" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts" /v "Monospace 821 Dec Left BT (TrueType)" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts" /v "Monospace 821 Dec Multi BT (TrueType)" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts" /v "Monospace 821 Dec Rt BT (TrueType)" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts" /v "Monospace 821 Dec Spec BT (TrueType)" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts" /v "Monospace 821 Dec Tech BT (TrueType)" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts" /v "NetSoft Regular (TrueType)" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts" /v "RUMBA 3812 Symbols (TrueType)" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts" /v "Rumba VT (TrueType)" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts" /v "RumbaICLSpe BT (TrueType)" /f
+
+reg delete "HKEY_CLASSES_ROOT\Installer\Products\0995F2B6084714A41A942F8A4FFC834B" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Classes\Installer\Products\0995F2B6084714A41A942F8A4FFC834B" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Products\0995F2B6084714A41A942F8A4FFC834B" /f
+
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\SharedDlls" /v "C:\Program Files (x86)\Micro Focus\NMServiceManager\NMServiceManager.exe" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\SharedDlls" /v "C:\Program Files (x86)\Micro Focus\NMServiceManager\Services\DownloadInstall\diresen.dll" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\SharedDlls" /v "C:\Program Files (x86)\Micro Focus\NMServiceManager\Services\DownloadInstall\diresfr.dll" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\SharedDlls" /v "C:\Program Files (x86)\Micro Focus\NMServiceManager\Services\DownloadInstall\diresger.dll" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\SharedDlls" /v "C:\Program Files (x86)\Micro Focus\NMServiceManager\Services\DownloadInstall\DownloadInstall.dll" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\SharedDlls" /v "C:\Program Files (x86)\Micro Focus\NMServiceManager\Services\DownloadInstall\DownloadInstallps.dll" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\SharedDlls" /v "C:\Program Files (x86)\Micro Focus\NMServiceManager\Services\DownloadInstall\InstallService.dll" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\SharedDlls" /v "C:\Program Files (x86)\Micro Focus\NMServiceManager\Services\DownloadInstall\ProductCfg.xsd" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\SharedDlls" /v "C:\Program Files (x86)\Micro Focus\NMServiceManager\Services\DownloadInstall\Uninstall\uninstallprocontainer.exe" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\SharedDlls" /v "C:\Program Files (x86)\Micro Focus\NMServiceManager\Services\DownloadInstall\Uninstall\UpdRgfs.EXE" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\SharedDlls" /v "C:\Program Files (x86)\Micro Focus\NMServiceManager\Services\DownloadInstall\w2hdien.dll" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\SharedDlls" /v "C:\Program Files (x86)\Micro Focus\NMServiceManager\Services\DownloadInstall\w2hdifr.dll" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\SharedDlls" /v "C:\Program Files (x86)\Micro Focus\NMServiceManager\Services\DownloadInstall\w2hdiger.dll" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\SharedDlls" /v "C:\Program Files (x86)\Micro Focus\NMServiceManager\Services\DownloadInstall\W2HDownloadInstall.dll" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\SharedDlls" /v "C:\Program Files (x86)\Micro Focus\NMServiceManager\Services\DownloadInstall\W2HRemoveTool.dll" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\SharedDlls" /v "C:\Program Files (x86)\Micro Focus\NMServiceManager\Services\DownloadInstall\W2HServerCfg.xsd" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\SharedDlls" /v "C:\Program Files (x86)\Micro Focus\RUMBA\Setup\RGF\WDAPP.RGF" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\SharedDlls" /v "C:\Program Files (x86)\Micro Focus\RUMBA\Setup\RGF\WDAPPCTL.RGF" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\SharedDlls" /v "C:\Program Files (x86)\Micro Focus\RUMBA\Setup\RGF\wdcolor.rgf" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\SharedDlls" /v "C:\Program Files (x86)\Micro Focus\RUMBA\Setup\RGF\WDKBD.RGF" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\SharedDlls" /v "C:\Program Files (x86)\Micro Focus\RUMBA\Setup\RGF\WDMACRO.RGF" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\SharedDlls" /v "C:\Program Files (x86)\Micro Focus\RUMBA\Setup\RGF\wdprint.rgf" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\SharedDlls" /v "C:\Program Files (x86)\Micro Focus\RUMBA\system\WDAPP.Dll" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\SharedDlls" /v "C:\Program Files (x86)\Micro Focus\RUMBA\system\WdAppCtl.ocx" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\SharedDlls" /v "C:\Program Files (x86)\Micro Focus\RUMBA\system\WdColor.Ocx" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\SharedDlls" /v "C:\Program Files (x86)\Micro Focus\RUMBA\system\WdKbd.Dll" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\SharedDlls" /v "C:\Program Files (x86)\Micro Focus\RUMBA\system\WdMacCtl.ocx" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\SharedDlls" /v "C:\Program Files (x86)\Micro Focus\RUMBA\system\WDMACRO.Dll" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\SharedDlls" /v "C:\Program Files (x86)\Micro Focus\RUMBA\system\WDPRINT.Dll" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\SharedDlls" /v "C:\Program Files (x86)\Micro Focus\WebToHostIcon.ico" /f
+
