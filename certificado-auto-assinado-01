@@ -1,3 +1,15 @@
+# 1. Para gerar o certificado auto assinado utilizando seu domínio, abra o PowerShell e digite os comandos abaixo, substituindo o seu.dominio.local pelo nome de seu domínio (o meu exemplo é com o sbrubles.local): 
+New-SelfSignedCertificate -certstorelocation Cert:\CurrentUser\My -dnsname seu.dominio.local 
+  
+# 2. Copie o thumbprint apresentado para utilizarmos com a exportação do certificado. 
+# Obs.: Todas as vezes que o comando New-SelfSignedCertificate for utilizado, é gerado um novo thumbprint completamente novo 
+  
+# 3. Crie uma senha para o certificado digital com os seguintes comandos: 
+$pwd = ConvertTo-SecureString -String "DigiteAquiSuaSenha" -Force -AsPlainText 
+
+4. Exporte o certificado criado e use como preferir: 
+Export-PfxCertificate -cert Cert:\CurrentUser\My\238F64A20B08A4CB02B48906E31DCA6E48496FCC -FilePath c:\temp\sbrubles_local.pfx -Password $pwd 
+
 # Comando para gerar o certificado auto assinado
 $cert = New-SelfSignedCertificate -Type Custom -KeySpec Signature  `
 -Subject "CN=CertificadoPrincipal" -KeyExportPolicy Exportable  `
