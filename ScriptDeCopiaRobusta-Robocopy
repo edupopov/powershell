@@ -1,0 +1,7 @@
+# Script de cópia robusta Windows
+# Ao término o Robocopy deixa os arquivos em formato oculto
+# Você pode utilizar o attrib para mudar o atributo dos arquivos copiados
+# A cópia robusta leva tanto arquivos quanto permissões atribuidas pela origem
+
+robocopy d:\ \\servidor\pasta01 /MIR /ZB /R:0 /W:0 /COPYALL /ts /tee /log:c:\registro\Copia09-AGO-2023.txt
+attrib -h -r -s /s /d D:\*.*
