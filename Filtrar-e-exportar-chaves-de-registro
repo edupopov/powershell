@@ -1,0 +1,6 @@
+# Pode ser necessario filtrar e exportar chaves de registro do Windows para um arquivo de texto por linha de comando
+# Este comando é útil para entender quais chaves de registro um determinado programa gera e se apos sua desinstalacao, ainda deixa residuos 
+# Emuladores de terminal como Rumba e o onweb deixam muitos residuos mesmo apos usa desisntalacao 
+# Neste caso, podemos utilizar o comando abaixo
+
+reg query HKEY_LOCAL_MACHINE /s /f "rumba" | find /i "rumba" > C:\Users\USUARIO-LOGADO\Desktop\registro-de-chave.txt
