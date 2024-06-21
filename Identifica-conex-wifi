@@ -1,0 +1,80 @@
+# Crie uma pasta chamda WIFI-POLO em C:\Users\usuario\AppData\Local\
+# O caminho deve ficar neste formato C:\Users\anaedua\AppData\Local\WIFI-POLO\ onde anaedua aqui é o usuário ativo
+# Salve este script dentro dessa pasta WIFI-POLO
+ 
+# Definindo o ID do log de eventos para conexões WLAN (Microsoft-Windows-WLAN-AutoConfig/Operational)
+$logName = "Microsoft-Windows-WLAN-AutoConfig/Operational"
+ 
+# Definindo o ID do evento para conexões bem-sucedidas (8001 e 8002 para conexões)
+# Use o @ e valores entre parênteses para declarar mais de um valor para a mesma variável
+$eventIds = @(8001, 8002)
+ 
+# Buscando eventos de conexão WLAN no event viewer
+$events = Get-WinEvent -LogName $logName | Where-Object { $eventIds -contains $_.Id }
+ 
+# Processando cada evento encontrado
+foreach ($event in $events) {
+    # Extraindo informações do XML do evento
+    $eventXml = [xml]$event.ToXml()
+ 
+    # Extraindo detalhes específicos do evento
+    $ssid = $eventXml.Event.EventData.Data | Where-Object { $_.Name -eq "SSID" } | Select-Object -ExpandProperty "#text"
+    $interfaceId = $eventXml.Event.EventData.Data | Where-Object { $_.Name -eq "InterfaceGuid" } | Select-Object -ExpandProperty "#text"
+    $timeCreated = $event.TimeCreated
+ 
+    # Exibindo as informações e redirecionando para um arquivo
+    $output = "SSID: $ssid`r`nInterface ID: $interfaceId`r`nTime Created: $timeCreated`r`n---------------------------------"
+    Add-Content -Path "C:\Users\anaedua\AppData\Local\WIFI-POLO\COLETA-DE-INTERFACE-02.txt" -Value $output
+}
+ 
+# Filtrando eventos do mês corrente
+$currentTime = Get-Date
+$eventsCurrentMonth = $events | Where-Object { $_.TimeCreated.Month -eq $currentTime.Month -and $_.TimeCreated.Year -eq $currentTime.Year }
+ 
+# Contabilizando acessos por SSID
+$ssidCounts = @{}
+foreach ($event in $eventsCurrentMonth) {
+    # Extraindo o SSID do evento
+    $eventXml = [xml]$event.ToXml()
+    $ssid = $eventXml.Event.EventData.Data | Where-Object { $_.Name -eq "SSID" } | Select-Object -ExpandProperty "#text"
+ 
+    # Incrementando a contagem para o SSID
+    if (-not $ssidCounts.ContainsKey($ssid)) {
+        $ssidCounts[$ssid] = 1
+    }
+    else {
+        $ssidCounts[$ssid]++
+    }
+}
+ 
+# Construindo a saída para o arquivo de log
+$summary = "`r`nResumo de Acessos do Mês Atual (`r`n"
+foreach ($ssid in $ssidCounts.Keys) {
+    $summary += "SSID: $ssid - Acessos: $($ssidCounts[$ssid])`r`n"
+}
+$summary += "---------------------------------`r`n"
+ 
+# Adicionando o resumo ao arquivo de log
+Add-Content -Path "C:\Users\anaedua\AppData\Local\WIFI-POLO\COLETA-DE-INTERFACE-02.txt" -Value $summary
+ 
+# Certifique-se de que a interface do Windows Forms está disponível
+Add-Type -AssemblyName System.Windows.Forms
+ 
+# Função para exibir uma caixa de mensagem
+function Show-MessageBox {
+    param (
+        [string]$Message,
+        [string]$Title = "Informação"
+    )
+ 
+    [System.Windows.Forms.MessageBox]::Show($Message, $Title, [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
+}
+ 
+# Construindo a mensagem para a caixa de mensagem
+$message = "Resumo de Acessos do Mês Atual:`r`n`r`n"
+foreach ($ssid in $ssidCounts.Keys) {
+    $message += "SSID: $ssid - Acessos: $($ssidCounts[$ssid])`r`n"
+}
+ 
+# Exibindo a mensagem
+Show-MessageBox -Message $message -Title "Resumo de Conexões WLAN"
