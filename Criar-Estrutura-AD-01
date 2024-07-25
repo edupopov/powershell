@@ -1,0 +1,69 @@
+# Cria a Unidade Organizacional 01-EMPRESA
+New-ADOrganizationalUnit -Name "01-EMPRESA" -Path "DC=popovici,DC=lab" -Description "Unidade Organizacional para a Empresa"
+
+# Cria a Unidade Organizacional 02-FILIAIS
+New-ADOrganizationalUnit -Name "02-FILIAIS" -Path "DC=popovici,DC=lab" -Description "Unidade Organizacional para Filiais"
+
+# Cria a Unidade Organizacional 03-SUCURSAIS
+New-ADOrganizationalUnit -Name "03-SUCURSAIS" -Path "DC=popovici,DC=lab" -Description "Unidade Organizacional para Sucursais"
+
+# Cria a Unidade Organizacional 04-EntraIDSync
+New-ADOrganizationalUnit -Name "04-EntraIDSync" -Path "DC=popovici,DC=lab" -Description "Unidade Organizacional para EntraIDSync"
+
+# Cria as OUs internas dentro de 01-EMPRESA
+New-ADOrganizationalUnit -Name "Departamentos" -Path "OU=01-EMPRESA,DC=popovici,DC=lab" -Description "Unidade Organizacional para Departamentos"
+New-ADOrganizationalUnit -Name "Servidores" -Path "OU=01-EMPRESA,DC=popovici,DC=lab" -Description "Unidade Organizacional para Servidores"
+New-ADOrganizationalUnit -Name "Terceiros" -Path "OU=01-EMPRESA,DC=popovici,DC=lab" -Description "Unidade Organizacional para Terceiros"
+New-ADOrganizationalUnit -Name "Aplicacoes" -Path "OU=01-EMPRESA,DC=popovici,DC=lab" -Description "Unidade Organizacional para Aplicações"
+
+# Cria as OUs dentro de Servidores
+New-ADOrganizationalUnit -Name "Servidor de Arquivos" -Path "OU=Servidores,OU=01-EMPRESA,DC=popovici,DC=lab" -Description "Unidade Organizacional para Servidores de Arquivos"
+New-ADOrganizationalUnit -Name "Servidores de Aplicacao" -Path "OU=Servidores,OU=01-EMPRESA,DC=popovici,DC=lab" -Description "Unidade Organizacional para Servidores de Aplicação"
+New-ADOrganizationalUnit -Name "Servidores de Bancos de Dados" -Path "OU=Servidores,OU=01-EMPRESA,DC=popovici,DC=lab" -Description "Unidade Organizacional para Servidores de Bancos de Dados"
+
+# Cria as OUs dentro de Departamentos
+New-ADOrganizationalUnit -Name "TI" -Path "OU=Departamentos,OU=01-EMPRESA,DC=popovici,DC=lab" -Description "Unidade Organizacional de TI"
+New-ADOrganizationalUnit -Name "RH" -Path "OU=Departamentos,OU=01-EMPRESA,DC=popovici,DC=lab" -Description "Unidade Organizacional de RH"
+New-ADOrganizationalUnit -Name "COMPRAS" -Path "OU=Departamentos,OU=01-EMPRESA,DC=popovici,DC=lab" -Description "Unidade Organizacional de Compras"
+New-ADOrganizationalUnit -Name "COMERCIAL" -Path "OU=Departamentos,OU=01-EMPRESA,DC=popovici,DC=lab" -Description "Unidade Organizacional Comercial"
+New-ADOrganizationalUnit -Name "ENGENHARIA" -Path "OU=Departamentos,OU=01-EMPRESA,DC=popovici,DC=lab" -Description "Unidade Organizacional de Engenharia"
+New-ADOrganizationalUnit -Name "JURIDICO" -Path "OU=Departamentos,OU=01-EMPRESA,DC=popovici,DC=lab" -Description "Unidade Organizacional Jurídico"
+
+# Cria as OUs dentro de TI
+New-ADOrganizationalUnit -Name "N1" -Path "OU=TI,OU=Departamentos,OU=01-EMPRESA,DC=popovici,DC=lab" -Description "Unidade Organizacional N1"
+New-ADOrganizationalUnit -Name "N2" -Path "OU=TI,OU=Departamentos,OU=01-EMPRESA,DC=popovici,DC=lab" -Description "Unidade Organizacional N2"
+New-ADOrganizationalUnit -Name "Administradores" -Path "OU=TI,OU=Departamentos,OU=01-EMPRESA,DC=popovici,DC=lab" -Description "Unidade Organizacional de Administradores"
+New-ADOrganizationalUnit -Name "Computadores" -Path "OU=TI,OU=Departamentos,OU=01-EMPRESA,DC=popovici,DC=lab" -Description "Unidade Organizacional de Computadores"
+New-ADOrganizationalUnit -Name "Impressoras" -Path "OU=TI,OU=Departamentos,OU=01-EMPRESA,DC=popovici,DC=lab" -Description "Unidade Organizacional de Impressoras"
+
+# Cria as OUs dentro de RH, COMPRAS, COMERCIAL, ENGENHARIA e JURIDICO
+$ouList = @("RH", "COMPRAS", "COMERCIAL", "ENGENHARIA", "JURIDICO")
+foreach ($ou in $ouList) {
+    New-ADOrganizationalUnit -Name "Computadores" -Path "OU=$ou,OU=Departamentos,OU=01-EMPRESA,DC=popovici,DC=lab" -Description "Unidade Organizacional de Computadores"
+    New-ADOrganizationalUnit -Name "Funcionários" -Path "OU=$ou,OU=Departamentos,OU=01-EMPRESA,DC=popovici,DC=lab" -Description "Unidade Organizacional de Funcionários"
+    New-ADOrganizationalUnit -Name "Impressoras" -Path "OU=$ou,OU=Departamentos,OU=01-EMPRESA,DC=popovici,DC=lab" -Description "Unidade Organizacional de Impressoras"
+    New-ADOrganizationalUnit -Name "Inativos" -Path "OU=$ou,OU=Departamentos,OU=01-EMPRESA,DC=popovici,DC=lab" -Description "Unidade Organizacional de Inativos"
+}
+
+# Cria as OUs Regras de VPN e Regras do File Server dentro de 01-EMPRESA
+New-ADOrganizationalUnit -Name "Regras de VPN" -Path "OU=01-EMPRESA,DC=popovici,DC=lab" -Description "Unidade Organizacional para Regras de VPN"
+New-ADOrganizationalUnit -Name "Regras do File Server" -Path "OU=01-EMPRESA,DC=popovici,DC=lab" -Description "Unidade Organizacional para Regras do File Server"
+
+# Cria os grupos de usuários dentro de Regras do File Server
+$gruposFileServer = @(
+    "LEITURA-COMERCIAL", "LEITURA-COMPRAS", "LEITURA-ENGENHARIA", "LEITURA-JURIDICO", "LEITURA-RH", "LEITURA-TI", 
+    "ESCRITA-COMPRAS", "ESCRITA-ENGENHARIA", "ESCRITA-JURIDICO", "ESCRITA-RH", "ESCRITA-TI"
+)
+foreach ($grupo in $gruposFileServer) {
+    New-ADGroup -Name $grupo -GroupScope Global -GroupCategory Security -Path "OU=Regras do File Server,OU=01-EMPRESA,DC=popovici,DC=lab" -Description "Grupo de $grupo"
+}
+
+# Cria os grupos de usuários dentro de Regras de VPN
+$gruposVPN = @("VPN-01", "VPN-02", "VPN-03")
+foreach ($grupo in $gruposVPN) {
+    New-ADGroup -Name $grupo -GroupScope Global -GroupCategory Security -Path "OU=Regras de VPN,OU=01-EMPRESA,DC=popovici,DC=lab" -Description "Grupo de $grupo"
+}
+
+# Cria as OUs dentro de Terceiros
+New-ADOrganizationalUnit -Name "Ativos" -Path "OU=Terceiros,OU=01-EMPRESA,DC=popovici,DC=lab" -Description "Unidade Organizacional de Terceiros Ativos"
+New-ADOrganizationalUnit -Name "Inativos" -Path "OU=Terceiros,OU=01-EMPRESA,DC=popovici,DC=lab" -Description "Unidade Organizacional de Terceiros Inativos"
