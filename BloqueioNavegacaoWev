@@ -1,0 +1,29 @@
+# Bloqueia saída TCP porta 80 (HTTP)
+New-NetFirewallRule -DisplayName "Bloquear HTTP - Navegação Web" `
+    -Direction Outbound `
+    -Protocol TCP `
+    -RemotePort 80 `
+    -Action Block `
+    -Profile Any `
+    -Enabled True `
+    -Program "Any"
+
+# Bloqueia saída TCP porta 443 (HTTPS)
+New-NetFirewallRule -DisplayName "Bloquear HTTPS - Navegação Web" `
+    -Direction Outbound `
+    -Protocol TCP `
+    -RemotePort 443 `
+    -Action Block `
+    -Profile Any `
+    -Enabled True `
+    -Program "Any"
+
+# Bloqueia saída UDP porta 443 (QUIC usado por Chrome/Edge/Firefox)
+New-NetFirewallRule -DisplayName "Bloquear QUIC - UDP 443" `
+    -Direction Outbound `
+    -Protocol UDP `
+    -RemotePort 443 `
+    -Action Block `
+    -Profile Any `
+    -Enabled True `
+    -Program "Any"
