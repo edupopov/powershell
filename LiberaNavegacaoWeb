@@ -1,0 +1,31 @@
+# Este script libera a navegacao web que foi criado por outro script neste repositório do GIT
+
+# Libera HTTP (porta 80)
+New-NetFirewallRule -DisplayName "Permitir HTTP - Navegação Web" `
+    -Direction Outbound `
+    -Protocol TCP `
+    -RemotePort 80 `
+    -Action Allow `
+    -Profile Any `
+    -Enabled True `
+    -Program "Any"
+
+# Libera HTTPS (porta 443)
+New-NetFirewallRule -DisplayName "Permitir HTTPS - Navegação Web" `
+    -Direction Outbound `
+    -Protocol TCP `
+    -RemotePort 443 `
+    -Action Allow `
+    -Profile Any `
+    -Enabled True `
+    -Program "Any"
+
+# Libera QUIC (porta 443 UDP)
+New-NetFirewallRule -DisplayName "Permitir QUIC - UDP 443" `
+    -Direction Outbound `
+    -Protocol UDP `
+    -RemotePort 443 `
+    -Action Allow `
+    -Profile Any `
+    -Enabled True `
+    -Program "Any"
