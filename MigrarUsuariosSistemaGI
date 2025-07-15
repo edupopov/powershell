@@ -1,0 +1,76 @@
+#############################################################################################
+# Script de automação de cópia do arquivo de configuração do GI para TS                     #
+# Criado por Eduardo Popovici - Time de Arquitetura                                         #
+# Os arquivos de perfil devem ser copiados em "C:\Program Files (x86)\GI2000\arquivos" .    #
+# Data da criação JUL/2025                                                                  #
+#############################################################################################
+
+################################################################################
+# Etapa 1
+# Script que le os arquivos criados pelo GI e entrega uma lista em formato CSV
+################################################################################
+
+# Caminho onde estão os arquivos
+$caminhoDiretorio = "C:\Program Files (x86)\GI2000\Arquivos"
+
+# Caminho do arquivo CSV de saída
+$caminhoCSV = "F:\GI-Files\lista-gi2000.csv"
+
+# Buscar arquivos que comecem com GI2000 e terminem com .ini
+$arquivos = Get-ChildItem -Path $caminhoDiretorio -Filter "GI2000*.ini" -File
+
+# Criar objeto com o nome dos arquivos
+$dados = $arquivos | Select-Object @{Name='NomeDoArquivo';Expression={$_.Name}}
+
+# Exportar para CSV
+$dados | Export-Csv -Path $caminhoCSV -NoTypeInformation -Encoding UTF8
+
+Write-Host "Exportação concluída! Arquivo salvo em: $caminhoCSV"
+
+################################################################################
+# Etapa 2
+# Realiza a cópia do arquivo modelo
+################################################################################
+
+# Caminho do arquivo de origem
+$origem = "C:\Program Files (x86)\GI2000\Arquivos\GI2000_teste01.ini"
+
+# Caminho de destino
+$destino = "F:\GI-Files\GI2000_teste01.ini"
+
+# Copiar o arquivo
+Copy-Item -Path $origem -Destination $destino -Force
+
+Write-Host "Arquivo copiado com sucesso!"
+
+################################################################################
+# Etapa 3
+# Cria os novos arquivos com base no arquivo csv
+################################################################################
+
+# Caminhos fixos
+$arquivoModelo = "C:\Program Files (x86)\GI2000\Arquivos\GI2000_teste01.ini"
+$caminhoCSV = "F:\GI-Files\lista-gi2000.csv"
+$pastaDestino = "F:\GI-Files"
+
+# Importar os nomes dos arquivos do CSV
+$lista = Import-Csv -Path $caminhoCSV
+
+# Verificar se o arquivo modelo existe
+if (-Not (Test-Path $arquivoModelo)) {
+    Write-Host "Arquivo modelo não encontrado!"
+    exit
+}
+
+# Loop para copiar e renomear
+foreach ($item in $lista) {
+    $novoNome = $item.NomeDoArquivo
+    $destinoCompleto = Join-Path -Path $pastaDestino -ChildPath $novoNome
+
+    try {
+        Copy-Item -Path $arquivoModelo -Destination $destinoCompleto -Force
+        Write-Host "Copiado como: $novoNome"
+    } catch {
+        Write-Host "Erro ao copiar para ${novoNome}: $_"
+    }
+}
