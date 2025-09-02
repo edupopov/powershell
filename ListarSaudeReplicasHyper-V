@@ -1,0 +1,19 @@
+# Este script mostra a saúde das réplicas de máquins virtuais entre dois servidores
+# Criado por Eduardo Popovici
+# 02-set-2025
+
+Import-Module Hyper-V
+
+$reps = Get-VMReplication
+
+$report = $reps |
+  Select-Object `
+    @{n='VM';e={ if ($_.VMName) { $_.VMName } else { $_.Name } }},
+    ReplicationState,
+    ReplicationHealth,
+    ReplicationMode,
+    LastReplicationTime,
+    PrimaryServer,
+    ReplicaServer
+
+$report | Sort-Object ReplicationHealth, ReplicationState, VM | Format-Table -AutoSize
