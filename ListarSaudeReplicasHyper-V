@@ -17,3 +17,11 @@ $report = $reps |
     ReplicaServer
 
 $report | Sort-Object ReplicationHealth, ReplicationState, VM | Format-Table -AutoSize
+
+$reps | Group-Object ReplicationHealth | Select-Object Name,Count
+$reps | Group-Object ReplicationState  | Select-Object Name,Count
+
+Get-VMReplicationServer |
+  Select-Object ComputerName, AuthType, HttpPort, HttpsPort, DefaultStorageLocation |
+  Format-List
+
