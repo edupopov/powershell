@@ -25,3 +25,5 @@ Get-VMReplicationServer |
   Select-Object ComputerName, AuthType, HttpPort, HttpsPort, DefaultStorageLocation |
   Format-List
 
+# Exportar para csv
+# $report | Export-Csv "C:\Temp\HyperV-Replica-Health.csv" -NoTypeInformation -Encoding UTF8
