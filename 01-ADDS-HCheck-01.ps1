@@ -6,6 +6,7 @@ AD Health Check – PS 5.1/7
 - Relatório salvo no Desktop por padrão (ou -OutputPath)
 - Analista/Cliente no rodapé e nas exportações
 - dcdiag com timeout real (sem jobs)
+- Criado por Eduardo Popovici
 #>
 
 [CmdletBinding()]
