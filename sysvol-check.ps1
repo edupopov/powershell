@@ -1,5 +1,5 @@
 <# ===========================
-   FIXEN.local – Verificação & Correção de SYSVOL/GPO
+   svrubles.local – Verificação & Correção de SYSVOL/GPO
    Autor: Eduardo Popovici
    Requisitos: PowerShell como Administrador no DC
 
