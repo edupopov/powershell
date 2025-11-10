@@ -1,0 +1,231 @@
+#Requires -Modules ActiveDirectory
+<#
+.SYNOPSIS
+Cria a estrutura base de OUs e Grupos no domínio atual (detectado automaticamente).
+
+.PARAMETER Server
+Opcional: especifica um DC para as operações AD (ex.: dc01.contoso.local)
+
+.PARAMETER WhatIf
+Opcional: simula a execução sem aplicar mudanças
+#>
+
+param(
+    [string] $Server = $null,
+    [switch] $WhatIf
+)
+
+# ------------------------ Preparação ------------------------
+# Garante UTF-8 para acentuação correta (Windows PowerShell)
+try { [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new() } catch {}
+
+# Preferir falha explícita em cmdlets AD
+$PSDefaultParameterValues['*:ErrorAction'] = 'Stop'
+
+# Importa módulo AD
+try {
+    Import-Module ActiveDirectory -ErrorAction Stop
+} catch {
+    Write-Host "[ERRO] Falha ao importar o módulo ActiveDirectory. RSAT instalado?" -ForegroundColor Red
+    throw
+}
+
+# Descobre domínio atual (DN e DNSRoot)
+try {
+    if ($Server) {
+        $DomainObj = Get-ADDomain -Server $Server
+    } else {
+        $DomainObj = Get-ADDomain
+    }
+    $DomainDN   = $DomainObj.DistinguishedName     # Ex.: DC=contoso,DC=local
+    $DnsRoot    = $DomainObj.DNSRoot               # Ex.: contoso.local
+    Write-Host "Domínio detectado: $DnsRoot  |  DN: $DomainDN" -ForegroundColor Cyan
+} catch {
+    Write-Host "[ERRO] Não foi possível detectar o domínio. Detalhes: $($_.Exception.Message)" -ForegroundColor Red
+    throw
+}
+
+# ------------------------ Funções utilitárias ------------------------
+function Test-OUExists {
+    param(
+        [Parameter(Mandatory)] [string] $DistinguishedName,
+        [string] $Server = $null
+    )
+    try {
+        if ($Server) {
+            $null = Get-ADOrganizationalUnit -Identity $DistinguishedName -Server $Server -ErrorAction Stop
+        } else {
+            $null = Get-ADOrganizationalUnit -Identity $DistinguishedName -ErrorAction Stop
+        }
+        return $true
+    } catch {
+        return $false
+    }
+}
+
+function New-OUIfMissing {
+    param(
+        [Parameter(Mandatory)] [string] $Name,
+        [Parameter(Mandatory)] [string] $Path,
+        [string] $Description = "",
+        [string] $Server = $null,
+        [switch] $WhatIf
+    )
+    $ouDN = "OU=$Name,$Path"
+
+    if (Test-OUExists -DistinguishedName $ouDN -Server $Server) {
+        Write-Host "[SKIP] OU já existe: $ouDN" -ForegroundColor Yellow
+        return
+    }
+
+    try {
+        $params = @{
+            Name                              = $Name
+            Path                              = $Path
+            Description                       = $Description
+            ProtectedFromAccidentalDeletion   = $true
+            ErrorAction                       = 'Stop'
+        }
+        if ($Server) { $params['Server'] = $Server }
+        if ($WhatIf) { $params['WhatIf'] = $true }
+
+        $null = New-ADOrganizationalUnit @params
+        Write-Host "[OK] OU criada: $ouDN" -ForegroundColor Green
+    } catch {
+        Write-Host "[ERRO] Falha ao criar OU $ouDN. Detalhes: $($_.Exception.Message)" -ForegroundColor Red
+    }
+}
+
+function New-GroupIfMissing {
+    param(
+        [Parameter(Mandatory)] [string] $Name,
+        [Parameter(Mandatory)] [string] $Path,           # DN da OU onde o grupo será criado
+        [string] $Description = "",
+        [string] $Server = $null,
+        [switch] $WhatIf
+    )
+
+    # 1) Validar a OU alvo
+    if (-not (Test-OUExists -DistinguishedName $Path -Server $Server)) {
+        Write-Host "[ERRO] OU alvo não encontrada: $Path" -ForegroundColor Red
+        return
+    }
+
+    # 2) Procurar grupo no nível imediato da OU
+    try {
+        $findParams = @{
+            Filter      = "Name -eq '$Name'"
+            SearchBase  = $Path
+            SearchScope = 'OneLevel'
+            ErrorAction = 'Stop'
+        }
+        if ($Server) { $findParams['Server'] = $Server }
+        $found = Get-ADGroup @findParams
+    } catch {
+        # Se não encontrar, Get-ADGroup com -ErrorAction Stop lança exceção — tratamos como "não existe"
+        $found = $null
+    }
+
+    if ($found) {
+        Write-Host "[SKIP] Grupo já existe: $($found.Name) em $Path" -ForegroundColor Yellow
+        return
+    }
+
+    # 3) Criar grupo
+    try {
+        $newParams = @{
+            Name          = $Name
+            Path          = $Path
+            GroupScope    = 'Global'
+            GroupCategory = 'Security'
+            Description   = $Description
+            ErrorAction   = 'Stop'
+        }
+        if ($Server) { $newParams['Server'] = $Server }
+        if ($WhatIf) { $newParams['WhatIf'] = $true }
+
+        $null = New-ADGroup @newParams
+        Write-Host "[OK] Grupo criado: $Name em $Path" -ForegroundColor Green
+    } catch {
+        Write-Host "[ERRO] Falha ao criar grupo '$Name' em $Path. Detalhes: $($_.Exception.Message)" -ForegroundColor Red
+    }
+}
+
+# ------------------------ Estrutura de OUs ------------------------
+# Topo
+New-OUIfMissing -Name "01-EMPRESA"     -Path $DomainDN -Description "Unidade Organizacional para a Empresa"       -Server $Server -WhatIf:$WhatIf
+New-OUIfMissing -Name "02-FILIAIS"     -Path $DomainDN -Description "Unidade Organizacional para Filiais"         -Server $Server -WhatIf:$WhatIf
+New-OUIfMissing -Name "03-SUCURSAIS"   -Path $DomainDN -Description "Unidade Organizacional para Sucursais"       -Server $Server -WhatIf:$WhatIf
+New-OUIfMissing -Name "04-EntraIDSync" -Path $DomainDN -Description "Unidade Organizacional para EntraIDSync"     -Server $Server -WhatIf:$WhatIf
+
+$EmpresaDN       = "OU=01-EMPRESA,$DomainDN"
+$DepartamentosDN = "OU=Departamentos,$EmpresaDN"
+$ServidoresDN    = "OU=Servidores,$EmpresaDN"
+$TerceirosDN     = "OU=Terceiros,$EmpresaDN"
+
+# Internas de 01-EMPRESA
+New-OUIfMissing -Name "Departamentos" -Path $EmpresaDN -Description "Unidade Organizacional para Departamentos" -Server $Server -WhatIf:$WhatIf
+New-OUIfMissing -Name "Servidores"    -Path $EmpresaDN -Description "Unidade Organizacional para Servidores"    -Server $Server -WhatIf:$WhatIf
+New-OUIfMissing -Name "Terceiros"     -Path $EmpresaDN -Description "Unidade Organizacional para Terceiros"     -Server $Server -WhatIf:$WhatIf
+New-OUIfMissing -Name "Aplicacoes"    -Path $EmpresaDN -Description "Unidade Organizacional para Aplicações"    -Server $Server -WhatIf:$WhatIf
+
+# Dentro de Servidores
+New-OUIfMissing -Name "Servidor de Arquivos"          -Path $ServidoresDN -Description "Unidade Organizacional para Servidores de Arquivos"  -Server $Server -WhatIf:$WhatIf
+New-OUIfMissing -Name "Servidores de Aplicacao"       -Path $ServidoresDN -Description "Unidade Organizacional para Servidores de Aplicação" -Server $Server -WhatIf:$WhatIf
+New-OUIfMissing -Name "Servidores de Bancos de Dados" -Path $ServidoresDN -Description "Unidade Organizacional para Servidores de Bancos de Dados" -Server $Server -WhatIf:$WhatIf
+
+# Dentro de Departamentos
+New-OUIfMissing -Name "TI"         -Path $DepartamentosDN -Description "Unidade Organizacional de TI"         -Server $Server -WhatIf:$WhatIf
+New-OUIfMissing -Name "RH"         -Path $DepartamentosDN -Description "Unidade Organizacional de RH"         -Server $Server -WhatIf:$WhatIf
+New-OUIfMissing -Name "COMPRAS"    -Path $DepartamentosDN -Description "Unidade Organizacional de Compras"    -Server $Server -WhatIf:$WhatIf
+New-OUIfMissing -Name "COMERCIAL"  -Path $DepartamentosDN -Description "Unidade Organizacional Comercial"     -Server $Server -WhatIf:$WhatIf
+New-OUIfMissing -Name "ENGENHARIA" -Path $DepartamentosDN -Description "Unidade Organizacional de Engenharia" -Server $Server -WhatIf:$WhatIf
+New-OUIfMissing -Name "JURIDICO"   -Path $DepartamentosDN -Description "Unidade Organizacional Jurídico"      -Server $Server -WhatIf:$WhatIf
+
+$TIDN = "OU=TI,$DepartamentosDN"
+
+# Dentro de TI
+New-OUIfMissing -Name "N1"              -Path $TIDN -Description "Unidade Organizacional N1"                     -Server $Server -WhatIf:$WhatIf
+New-OUIfMissing -Name "N2"              -Path $TIDN -Description "Unidade Organizacional N2"                     -Server $Server -WhatIf:$WhatIf
+New-OUIfMissing -Name "Administradores" -Path $TIDN -Description "Unidade Organizacional de Administradores"     -Server $Server -WhatIf:$WhatIf
+New-OUIfMissing -Name "Computadores"    -Path $TIDN -Description "Unidade Organizacional de Computadores"        -Server $Server -WhatIf:$WhatIf
+New-OUIfMissing -Name "Impressoras"     -Path $TIDN -Description "Unidade Organizacional de Impressoras"         -Server $Server -WhatIf:$WhatIf
+
+# RH, COMPRAS, COMERCIAL, ENGENHARIA, JURIDICO
+$Setores = @("RH", "COMPRAS", "COMERCIAL", "ENGENHARIA", "JURIDICO")
+foreach ($ou in $Setores) {
+    $base = "OU=$ou,$DepartamentosDN"
+    New-OUIfMissing -Name "Computadores" -Path $base -Description "Unidade Organizacional de Computadores" -Server $Server -WhatIf:$WhatIf
+    New-OUIfMissing -Name "Funcionários" -Path $base -Description "Unidade Organizacional de Funcionários" -Server $Server -WhatIf:$WhatIf
+    New-OUIfMissing -Name "Impressoras"  -Path $base -Description "Unidade Organizacional de Impressoras"  -Server $Server -WhatIf:$WhatIf
+    New-OUIfMissing -Name "Inativos"     -Path $base -Description "Unidade Organizacional de Inativos"     -Server $Server -WhatIf:$WhatIf
+}
+
+# Regras (dentro de 01-EMPRESA)
+New-OUIfMissing -Name "Regras de VPN"         -Path $EmpresaDN -Description "Unidade Organizacional para Regras de VPN"        -Server $Server -WhatIf:$WhatIf
+New-OUIfMissing -Name "Regras do File Server" -Path $EmpresaDN -Description "Unidade Organizacional para Regras do File Server" -Server $Server -WhatIf:$WhatIf
+
+$RegrasVPN_DN = "OU=Regras de VPN,$EmpresaDN"
+$RegrasFS_DN  = "OU=Regras do File Server,$EmpresaDN"
+
+# ------------------------ Grupos ------------------------
+# File Server
+$GruposFileServer = @(
+    "LEITURA-COMERCIAL", "LEITURA-COMPRAS", "LEITURA-ENGENHARIA", "LEITURA-JURIDICO", "LEITURA-RH", "LEITURA-TI",
+    "ESCRITA-COMPRAS", "ESCRITA-ENGENHARIA", "ESCRITA-JURIDICO", "ESCRITA-RH", "ESCRITA-TI"
+)
+foreach ($g in $GruposFileServer) {
+    New-GroupIfMissing -Name $g -Path $RegrasFS_DN -Description "Grupo de $g" -Server $Server -WhatIf:$WhatIf
+}
+
+# VPN
+$GruposVPN = @("VPN-01", "VPN-02", "VPN-03")
+foreach ($g in $GruposVPN) {
+    New-GroupIfMissing -Name $g -Path $RegrasVPN_DN -Description "Grupo de $g" -Server $Server -WhatIf:$WhatIf
+}
+
+# Terceiros
+New-OUIfMissing -Name "Ativos"   -Path $TerceirosDN -Description "Unidade Organizacional de Terceiros Ativos"   -Server $Server -WhatIf:$WhatIf
+New-OUIfMissing -Name "Inativos" -Path $TerceirosDN -Description "Unidade Organizacional de Terceiros Inativos"  -Server $Server -WhatIf:$WhatIf
+
+Write-Host "`nConcluído." -ForegroundColor Cyan
