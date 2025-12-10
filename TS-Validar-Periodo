@@ -1,0 +1,18 @@
+# Criado por Eduardo Popovici
+# Abra o Powershell com permissão administrativa, 
+# Depois, navegue onde o script foi salvo,
+# Execute o script,
+
+(Invoke-CimMethod -InputObject (
+    Get-CimInstance -Namespace root/CIMV2/TerminalServices -ClassName Win32_TerminalServiceSetting
+) -MethodName GetGracePeriodDays).DaysLeft
+
+$grace    = Invoke-CimMethod -InputObject (
+    Get-CimInstance -Namespace root/CIMV2/TerminalServices -ClassName Win32_TerminalServiceSetting
+) -MethodName GetGracePeriodDays
+
+$daysLeft = [int]$grace.DaysLeft
+$expireOn = (Get-Date).Date.AddDays($daysLeft)
+
+"RDS - dias restantes : $daysLeft"
+"RDS - expira em      : $expireOn"
