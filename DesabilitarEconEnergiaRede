@@ -1,0 +1,82 @@
+# Este script desabilita a economia de energia na interface de rede dos Windows 
+# Isso permite deixar a comunicação de redes mais estavel
+# Script criado por Eduardo Popovici
+
+# Mensagem inicial informando o que o script fará
+Write-Host "Desativando configurações de economia de energia de adaptadores de rede..." -ForegroundColor Cyan
+
+# Obtém todos os adaptadores de rede que NÃO estão desconectados.
+# Isso inclui Wi-Fi, Ethernet e VPNs ativas.
+$adapters = Get-NetAdapter | Where-Object { $_.Status -ne "Disconnected" }
+
+# Inicia um loop para processar cada adaptador encontrado
+foreach ($adapter in $adapters) {
+
+    # Exibe qual adaptador está sendo processado no momento
+    Write-Host "`nProcessando: $($adapter.Name) ($($adapter.InterfaceDescription))"
+
+    # Obtém o objeto WMI correspondente ao adaptador.
+    # O WMI contém informações como PNPDeviceID, necessário para localizar o Registro.
+    $wmi = Get-WmiObject -Class Win32_NetworkAdapter -Filter "NetConnectionID='$($adapter.Name)'"
+
+    # Caso o adaptador não tenha resposta WMI (raro, mas possível), pula para o próximo
+    if ($wmi -eq $null) {
+        Write-Host "  Não foi possível acessar WMI para este adaptador." -ForegroundColor Yellow
+        continue
+    }
+
+    # Monta o caminho do Registro onde ficam as configurações de energia do dispositivo.
+    # Esse local muda de acordo com o PNPDeviceID do hardware.
+    $regPath = "HKLM:\SYSTEM\CurrentControlSet\Enum\$($wmi.PNPDeviceID)\Device Parameters\PowerManagement"
+
+    # Verifica se a chave de PowerManagement existe para o adaptador.
+    # Nem todos os drivers possuem essa chave.
+    if (Test-Path $regPath) {
+        Write-Host "  Verificando configurações de energia..."
+
+        # Carrega valores atuais configurados no Registro
+        # Alguns valores podem não existir em certos drivers (como WakeOnMagicPacket).
+        $items = Get-ItemProperty -Path $regPath -ErrorAction SilentlyContinue
+
+        # --------------------------------------------------------------
+        # 1) DeviceIdleEnabled controla se o Windows pode desligar o adaptador
+        #    para economizar energia.
+        #    Valor 1 = permitido (ligado)
+        #    Valor 0 = desativado (não pode desligar)
+        # --------------------------------------------------------------
+        if ($items.DeviceIdleEnabled -eq 1) {
+            Set-ItemProperty -Path $regPath -Name "DeviceIdleEnabled" -Value 0
+            Write-Host "  Desativado: DeviceIdleEnabled"
+        } else {
+            Write-Host "  Já estava desativado."
+        }
+
+        # --------------------------------------------------------------
+        # 2) DeviceSleepOnDisconnect indica se o adaptador deve "dormir"
+        #    ao perder conexão física (principalmente Ethernet com EEE).
+        # --------------------------------------------------------------
+        if ($items.DeviceSleepOnDisconnect -eq 1) {
+            Set-ItemProperty -Path $regPath -Name "DeviceSleepOnDisconnect" -Value 0
+            Write-Host "  Desativado: DeviceSleepOnDisconnect"
+        }
+
+        # --------------------------------------------------------------
+        # 3) AllowWake define se o dispositivo pode acordar o PC
+        #    (Wake-on-LAN). Valor 1 habilita.
+        # --------------------------------------------------------------
+        if ($items.AllowWake -eq 0) {
+            Set-ItemProperty -Path $regPath -Name "AllowWake" -Value 1
+            Write-Host "  Ativado: AllowWake (Wake-on-LAN)"
+        }
+
+        Write-Host "  Configurações aplicadas!"
+    }
+    else {
+        # Caso o driver não tenha suporte a PowerManagement via registro
+        Write-Host "  Este adaptador não possui chave de PowerManagement no registro." -ForegroundColor Yellow
+    }
+
+}
+
+# Mensagem final
+Write-Host "`n Finalizado! Reinicie o computador para garantir que todas as alterações tenham efeito." -ForegroundColor Green
