@@ -2,6 +2,9 @@
 # Você vai precisar fechar e abrir o terminal 
 winget install --id Microsoft.PowerShell --source winget
 
+# abra o terminal com o Powershell 7
+pwsh
+
 # Instalar o módulo de powershell
 Install-Module -Name Microsoft.Online.SharePoint.PowerShell -Scope CurrentUser -Force
 
