@@ -114,9 +114,37 @@ try {
 } catch {}
 
 # ============================================================
+# DESATIVAR OS 2 TOGGLES DO XBOX GAME BAR (VERSÃO FINAL)
+# ============================================================
+
+$regPath = "HKCU:\Software\Microsoft\GameBar"
+
+if (!(Test-Path $regPath)) {
+    New-Item -Path $regPath -Force | Out-Null
+}
+
+# 1. Permitir controle abrir Game Bar
+New-ItemProperty `
+    -Path $regPath `
+    -Name "UseNexusForGameBarEnabled" `
+    -PropertyType DWord `
+    -Value 0 `
+    -Force | Out-Null
+
+# 2. Usar View + Menu como botão painel
+New-ItemProperty `
+    -Path $regPath `
+    -Name "GamepadNexusChordEnabled" `
+    -PropertyType DWord `
+    -Value 0 `
+    -Force | Out-Null
+
+Write-Host "Toggles desativados (HKCU)"
+
+# ============================================================
 # FINALIZAÇÃO
 # ============================================================
 Write-Host "Hardening concluído com sucesso!" -ForegroundColor Green
 
 # Reinicia Explorer para aplicar imediatamente
-Stop-Process -Name explorer -Force
+# Stop-Process -Name explorer -Force
