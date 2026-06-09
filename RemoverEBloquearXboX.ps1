@@ -141,6 +141,11 @@ New-ItemProperty `
 
 Write-Host "Toggles desativados (HKCU)"
 
+Set-ItemProperty `
+ -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" `
+ -Name "DisabledHotkeys" `
+ -Value "G"
+
 # ============================================================
 # FINALIZAÇÃO
 # ============================================================
