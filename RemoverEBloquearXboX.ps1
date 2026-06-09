@@ -1,9 +1,10 @@
 # ============================================================
 # BASELINE CORPORATIVO - HARDENING WINDOWS 11
 # Foco: Remoção de Xbox + Desativação de funcionalidades
+# Autor: Eduardo-Popovici
 # ============================================================
 
-Write-Host "🚀 Iniciando hardening do Windows 11..." -ForegroundColor Cyan
+Write-Host "Iniciando hardening do Windows 11..." -ForegroundColor Cyan
 
 # ============================================================
 # FUNÇÃO PADRÃO (boas práticas enterprise)
@@ -115,7 +116,7 @@ try {
 # ============================================================
 # FINALIZAÇÃO
 # ============================================================
-Write-Host "✅ Hardening concluído com sucesso!" -ForegroundColor Green
+Write-Host "Hardening concluído com sucesso!" -ForegroundColor Green
 
 # Reinicia Explorer para aplicar imediatamente
 Stop-Process -Name explorer -Force
