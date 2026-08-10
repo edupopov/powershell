@@ -1,5 +1,5 @@
 <# 
-AD Health Check – PS 5.1/7 – Layout v4
+AD Health Check – PS 5.1/7 – Layout v5
 - Criado por Eduardo Popovici e disponível em seu repositório GitHub
 - Script criado e disponibilizado para a comunidade Microsoft
 - Ping via ping.exe
@@ -11,6 +11,7 @@ AD Health Check – PS 5.1/7 – Layout v4
 - Relatório HTML com resumo, inventário do Windows Server e seção de falhas identificadas
 - Inventário por DC: edição, versão e build do Windows Server
 - Manutenção por DC: último HotFix/KB detectado e última inicialização (reboot)
+- Topologia AD: FSMO, níveis funcionais, Sites e Site Links de replicação
 #>
 
 [CmdletBinding()]
@@ -310,6 +311,50 @@ function Get-ServerInventorySafe {
   }
 }
 
+function Convert-ADFunctionalLevelLabel {
+  param([string]$Mode)
+
+  if ([string]::IsNullOrWhiteSpace($Mode)) { return 'Unknown' }
+
+  switch -Regex ($Mode) {
+    '2025'        { return 'Windows Server 2025' }
+    '2016'        { return 'Windows Server 2016' }
+    '2012R2'      { return 'Windows Server 2012 R2' }
+    '2012'        { return 'Windows Server 2012' }
+    '2008R2'      { return 'Windows Server 2008 R2' }
+    '2008'        { return 'Windows Server 2008' }
+    '2003.*Interim|Interim.*2003' { return 'Windows Server 2003 Interim' }
+    '2003'        { return 'Windows Server 2003' }
+    '2000.*Mixed|Mixed.*2000' { return 'Windows 2000 Mixed' }
+    '2000'        { return 'Windows 2000' }
+    default       { return $Mode }
+  }
+}
+
+function Convert-ADTransportLabel {
+  param([string]$Transport)
+
+  if ([string]::IsNullOrWhiteSpace($Transport)) { return 'Unknown' }
+  switch -Regex ($Transport) {
+    '^Rpc$|RPC' { return 'IP (RPC)' }
+    '^Smtp$|SMTP' { return 'SMTP' }
+    default { return $Transport }
+  }
+}
+
+function Get-DirectoryServerNameSafe {
+  param($ServerObject)
+
+  if ($null -eq $ServerObject) { return 'Unknown' }
+  try {
+    if ($ServerObject.Name) { return ([string]$ServerObject.Name).Trim() }
+  } catch {}
+
+  $text = ([string]$ServerObject).Trim()
+  if ([string]::IsNullOrWhiteSpace($text)) { return 'Unknown' }
+  return $text
+}
+
 function Get-StatusColor {
   param([Parameter(Mandatory)][string]$Status)
   switch ($Status) {
@@ -348,6 +393,185 @@ try {
 $DCServers = $DCServers | Sort-Object -Unique
 if (-not $DCServers) { throw "Nenhum DC encontrado." }
 Write-Host "DCs encontrados: $($DCServers -join ', ')" -ForegroundColor DarkCyan
+
+# ===========================
+# Topologia / FSMO / níveis funcionais
+# ===========================
+$ForestFunctionalLevel = 'Unknown'
+$DomainTopologyInfo     = @()
+$FSMORoles              = @()
+$SiteTopologyInfo       = @()
+$SiteLinkTopologyInfo   = @()
+
+# Nível funcional da floresta e papéis FSMO de floresta.
+# Prioriza o módulo ActiveDirectory quando disponível, com fallback para .NET.
+$adForestInfo = $null
+if (Get-Command Get-ADForest -ErrorAction SilentlyContinue) {
+  try { $adForestInfo = Get-ADForest -Identity $ForestRoot -ErrorAction Stop } catch {}
+}
+
+if ($adForestInfo) {
+  $ForestFunctionalLevel = Convert-ADFunctionalLevelLabel -Mode ([string]$adForestInfo.ForestMode)
+  $FSMORoles += [pscustomobject]@{
+    Role  = 'Schema Master'
+    Scope = 'Floresta'
+    Domain = $ForestRoot
+    Server = if ($adForestInfo.SchemaMaster) { [string]$adForestInfo.SchemaMaster } else { 'Unknown' }
+  }
+  $FSMORoles += [pscustomobject]@{
+    Role  = 'Domain Naming Master'
+    Scope = 'Floresta'
+    Domain = $ForestRoot
+    Server = if ($adForestInfo.DomainNamingMaster) { [string]$adForestInfo.DomainNamingMaster } else { 'Unknown' }
+  }
+} else {
+  try { $ForestFunctionalLevel = Convert-ADFunctionalLevelLabel -Mode ([string]$forest.ForestMode) } catch {}
+
+  $schemaOwner = 'Unknown'
+  $namingOwner = 'Unknown'
+  try { $schemaOwner = Get-DirectoryServerNameSafe -ServerObject $forest.SchemaRoleOwner } catch {}
+  try { $namingOwner = Get-DirectoryServerNameSafe -ServerObject $forest.NamingRoleOwner } catch {}
+
+  $FSMORoles += [pscustomobject]@{
+    Role='Schema Master'; Scope='Floresta'; Domain=$ForestRoot; Server=$schemaOwner
+  }
+  $FSMORoles += [pscustomobject]@{
+    Role='Domain Naming Master'; Scope='Floresta'; Domain=$ForestRoot; Server=$namingOwner
+  }
+}
+
+# Nível funcional de cada domínio e três papéis FSMO de domínio.
+foreach ($domainObj in $forest.Domains) {
+  $domainName = [string]$domainObj.Name
+  $domainMode = 'Unknown'
+  $pdcOwner   = 'Unknown'
+  $ridOwner   = 'Unknown'
+  $infraOwner = 'Unknown'
+
+  $adDomainInfo = $null
+  if (Get-Command Get-ADDomain -ErrorAction SilentlyContinue) {
+    try { $adDomainInfo = Get-ADDomain -Identity $domainName -ErrorAction Stop } catch {}
+  }
+
+  if ($adDomainInfo) {
+    $domainMode = Convert-ADFunctionalLevelLabel -Mode ([string]$adDomainInfo.DomainMode)
+    if ($adDomainInfo.PDCEmulator)          { $pdcOwner   = [string]$adDomainInfo.PDCEmulator }
+    if ($adDomainInfo.RIDMaster)            { $ridOwner   = [string]$adDomainInfo.RIDMaster }
+    if ($adDomainInfo.InfrastructureMaster) { $infraOwner = [string]$adDomainInfo.InfrastructureMaster }
+  } else {
+    try { $domainMode = Convert-ADFunctionalLevelLabel -Mode ([string]$domainObj.DomainMode) } catch {}
+    try { $pdcOwner   = Get-DirectoryServerNameSafe -ServerObject $domainObj.PdcRoleOwner } catch {}
+    try { $ridOwner   = Get-DirectoryServerNameSafe -ServerObject $domainObj.RidRoleOwner } catch {}
+    try { $infraOwner = Get-DirectoryServerNameSafe -ServerObject $domainObj.InfrastructureRoleOwner } catch {}
+  }
+
+  $DomainTopologyInfo += [pscustomobject]@{
+    Domain          = $domainName
+    FunctionalLevel = $domainMode
+  }
+
+  $FSMORoles += [pscustomobject]@{
+    Role='PDC Emulator'; Scope='Domínio'; Domain=$domainName; Server=$pdcOwner
+  }
+  $FSMORoles += [pscustomobject]@{
+    Role='RID Master'; Scope='Domínio'; Domain=$domainName; Server=$ridOwner
+  }
+  $FSMORoles += [pscustomobject]@{
+    Role='Infrastructure Master'; Scope='Domínio'; Domain=$domainName; Server=$infraOwner
+  }
+}
+
+# Sites, Domain Controllers por site e Site Links.
+# Um Site Link conecta sites; a coluna "Servidores nos sites do link" lista os DCs
+# localizados em cada site participante do link.
+$siteServerLookup = @{}
+$siteLinkLookup   = @{}
+
+try {
+  foreach ($site in $forest.Sites) {
+    $siteName = [string]$site.Name
+    $servers = @()
+
+    try {
+      $servers = @(
+        $site.Servers |
+          ForEach-Object { Get-DirectoryServerNameSafe -ServerObject $_ } |
+          Where-Object { $_ -and $_ -ne 'Unknown' } |
+          Sort-Object -Unique
+      )
+    } catch {}
+
+    $siteServerLookup[$siteName] = $servers
+
+    $SiteTopologyInfo += [pscustomobject]@{
+      Site        = $siteName
+      ServerCount = $servers.Count
+      Servers     = if ($servers.Count -gt 0) { $servers -join ', ' } else { '(sem Domain Controller)' }
+    }
+
+    try {
+      foreach ($link in $site.SiteLinks) {
+        $linkName = [string]$link.Name
+        $transport = 'Unknown'
+        try { $transport = Convert-ADTransportLabel -Transport ([string]$link.TransportType) } catch {}
+        $linkKey = "$transport|$linkName"
+        if (-not $siteLinkLookup.ContainsKey($linkKey)) {
+          $siteLinkLookup[$linkKey] = $link
+        }
+      }
+    } catch {}
+  }
+
+  foreach ($linkKey in ($siteLinkLookup.Keys | Sort-Object)) {
+    $link = $siteLinkLookup[$linkKey]
+    $linkSites = @()
+    try {
+      $linkSites = @(
+        $link.Sites |
+          ForEach-Object { [string]$_.Name } |
+          Where-Object { $_ } |
+          Sort-Object -Unique
+      )
+    } catch {}
+
+    $serverGroups = @()
+    foreach ($linkSiteName in $linkSites) {
+      $siteServers = @()
+      if ($siteServerLookup.ContainsKey($linkSiteName)) {
+        $siteServers = @($siteServerLookup[$linkSiteName])
+      }
+
+      if ($siteServers.Count -gt 0) {
+        $serverGroups += ("{0}: {1}" -f $linkSiteName, ($siteServers -join ', '))
+      } else {
+        $serverGroups += ("{0}: (sem Domain Controller)" -f $linkSiteName)
+      }
+    }
+
+    $cost = 'Unknown'
+    $replicationInterval = 'Unknown'
+    $transportType = 'Unknown'
+    try { $cost = [string]$link.Cost } catch {}
+    try { $replicationInterval = [math]::Round($link.ReplicationInterval.TotalMinutes, 0).ToString() } catch {}
+    try { $transportType = Convert-ADTransportLabel -Transport ([string]$link.TransportType) } catch {}
+
+    $SiteLinkTopologyInfo += [pscustomobject]@{
+      LinkName            = [string]$link.Name
+      Transport           = $transportType
+      Cost                = $cost
+      ReplicationMinutes  = $replicationInterval
+      Sites               = if ($linkSites.Count -gt 0) { $linkSites -join ', ' } else { 'Unknown' }
+      ServersBySite       = if ($serverGroups.Count -gt 0) { $serverGroups -join ' | ' } else { 'Unknown' }
+    }
+  }
+} catch {
+  Write-Warning "Não foi possível coletar toda a topologia de Sites/Site Links: $($_.Exception.Message)"
+}
+
+$DomainTopologyInfo   = @($DomainTopologyInfo | Sort-Object Domain)
+$FSMORoles            = @($FSMORoles | Sort-Object Scope, Domain, Role)
+$SiteTopologyInfo     = @($SiteTopologyInfo | Sort-Object Site)
+$SiteLinkTopologyInfo = @($SiteLinkTopologyInfo | Sort-Object LinkName)
 
 # ===========================
 # Tabela de portas por protocolo
@@ -838,6 +1062,80 @@ $css = @"
     border: 1px solid #f4b8bd;
   }
 
+  .topology-panel {
+    border-left: 4px solid #5c4aa5;
+  }
+
+  .topology-panel .panel-header {
+    background: #f7f5ff;
+  }
+
+  .topology-table {
+    min-width: 760px !important;
+  }
+
+  .topology-table th,
+  .topology-table td {
+    font-size: 11px;
+  }
+
+  .topology-table thead th {
+    position: static !important;
+    background: #5c4aa5;
+    color: #ffffff;
+    height: auto;
+  }
+
+  .topology-table td {
+    text-align: left;
+    white-space: normal;
+    line-height: 1.45;
+  }
+
+  .topology-table .topology-name {
+    min-width: 190px;
+    font-weight: 650;
+    color: #24364b;
+  }
+
+  .topology-table .topology-servers {
+    min-width: 420px;
+  }
+
+  .topology-table .topology-sites {
+    min-width: 280px;
+  }
+
+  .topology-table .topology-number {
+    min-width: 90px;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  .topology-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 28px;
+    height: 28px;
+    padding: 0 9px;
+    border-radius: 999px;
+    background: #eeeafd;
+    color: #493b8a;
+    border: 1px solid #d6cff5;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .topology-note {
+    padding: 12px 18px;
+    background: #fbfaff;
+    border-top: 1px solid #ece8f8;
+    color: #5b6472;
+    font-size: 11px;
+    line-height: 1.5;
+  }
+
   .inventory-panel {
     border-left: 4px solid #1769aa;
   }
@@ -1074,6 +1372,143 @@ $css = @"
 </style>
 "@
 
+# Gera as seções visuais de configuração e topologia do Active Directory.
+$forestFunctionalLevelHtml = [System.Net.WebUtility]::HtmlEncode([string]$ForestFunctionalLevel)
+
+$domainLevelRows = foreach ($domainInfo in $DomainTopologyInfo) {
+  $domainHtml = [System.Net.WebUtility]::HtmlEncode([string]$domainInfo.Domain)
+  $levelHtml  = [System.Net.WebUtility]::HtmlEncode([string]$domainInfo.FunctionalLevel)
+  "<tr><td class='topology-name'>$domainHtml</td><td>$levelHtml</td></tr>"
+}
+if ($domainLevelRows.Count -eq 0) {
+  $domainLevelRows = @("<tr><td colspan='2'>Não foi possível identificar os domínios e seus níveis funcionais.</td></tr>")
+}
+
+$fsmoRows = foreach ($role in $FSMORoles) {
+  $roleHtml   = [System.Net.WebUtility]::HtmlEncode([string]$role.Role)
+  $scopeHtml  = [System.Net.WebUtility]::HtmlEncode([string]$role.Scope)
+  $domainHtml = [System.Net.WebUtility]::HtmlEncode([string]$role.Domain)
+  $serverHtml = [System.Net.WebUtility]::HtmlEncode([string]$role.Server)
+  "<tr><td class='topology-name'>$roleHtml</td><td>$scopeHtml</td><td>$domainHtml</td><td class='topology-servers'>$serverHtml</td></tr>"
+}
+if ($fsmoRows.Count -eq 0) {
+  $fsmoRows = @("<tr><td colspan='4'>Não foi possível identificar os papéis FSMO.</td></tr>")
+}
+
+$siteRows = foreach ($siteInfo in $SiteTopologyInfo) {
+  $siteHtml    = [System.Net.WebUtility]::HtmlEncode([string]$siteInfo.Site)
+  $countHtml   = [System.Net.WebUtility]::HtmlEncode([string]$siteInfo.ServerCount)
+  $serversHtml = [System.Net.WebUtility]::HtmlEncode([string]$siteInfo.Servers)
+  "<tr><td class='topology-name'>$siteHtml</td><td class='topology-number'>$countHtml</td><td class='topology-servers'>$serversHtml</td></tr>"
+}
+if ($siteRows.Count -eq 0) {
+  $siteRows = @("<tr><td colspan='3'>Não foi possível identificar os Sites do Active Directory.</td></tr>")
+}
+
+$siteLinkRows = foreach ($siteLinkInfo in $SiteLinkTopologyInfo) {
+  $linkHtml      = [System.Net.WebUtility]::HtmlEncode([string]$siteLinkInfo.LinkName)
+  $transportHtml = [System.Net.WebUtility]::HtmlEncode([string]$siteLinkInfo.Transport)
+  $costHtml      = [System.Net.WebUtility]::HtmlEncode([string]$siteLinkInfo.Cost)
+  $intervalHtml  = [System.Net.WebUtility]::HtmlEncode([string]$siteLinkInfo.ReplicationMinutes)
+  $sitesHtml     = [System.Net.WebUtility]::HtmlEncode([string]$siteLinkInfo.Sites)
+  $serversHtml   = [System.Net.WebUtility]::HtmlEncode([string]$siteLinkInfo.ServersBySite)
+  "<tr><td class='topology-name'>$linkHtml</td><td>$transportHtml</td><td class='topology-number'>$costHtml</td><td class='topology-number'>$intervalHtml</td><td class='topology-sites'>$sitesHtml</td><td class='topology-servers'>$serversHtml</td></tr>"
+}
+if ($siteLinkRows.Count -eq 0) {
+  $siteLinkRows = @("<tr><td colspan='6'>Nenhum Site Link foi identificado ou a consulta não pôde ser concluída.</td></tr>")
+}
+
+$adTopologySection = @"
+  <section class='panel topology-panel'>
+    <div class='panel-header'>
+      <h2 class='panel-title'>Níveis Funcionais do Active Directory</h2>
+      <span class='topology-badge'>AD</span>
+    </div>
+    <div class='table-scroll'>
+      <table class='topology-table'>
+        <thead>
+          <tr>
+            <th>Escopo</th>
+            <th>Nível funcional</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td class='topology-name'>Floresta: $ForestRootHtml</td><td>$forestFunctionalLevelHtml</td></tr>
+          $($domainLevelRows -join "`n")
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class='panel topology-panel'>
+    <div class='panel-header'>
+      <h2 class='panel-title'>Papéis FSMO</h2>
+      <span class='topology-badge'>$($FSMORoles.Count)</span>
+    </div>
+    <div class='table-scroll'>
+      <table class='topology-table'>
+        <thead>
+          <tr>
+            <th>Papel FSMO</th>
+            <th>Escopo</th>
+            <th>Domínio / Floresta</th>
+            <th>Servidor responsável</th>
+          </tr>
+        </thead>
+        <tbody>
+          $($fsmoRows -join "`n")
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class='panel topology-panel'>
+    <div class='panel-header'>
+      <h2 class='panel-title'>Sites e Domain Controllers</h2>
+      <span class='topology-badge'>$($SiteTopologyInfo.Count) sites</span>
+    </div>
+    <div class='table-scroll'>
+      <table class='topology-table'>
+        <thead>
+          <tr>
+            <th>Site</th>
+            <th>Quantidade de DCs</th>
+            <th>Domain Controllers no Site</th>
+          </tr>
+        </thead>
+        <tbody>
+          $($siteRows -join "`n")
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class='panel topology-panel'>
+    <div class='panel-header'>
+      <h2 class='panel-title'>Site Links de Replicação</h2>
+      <span class='topology-badge'>$($SiteLinkTopologyInfo.Count) links</span>
+    </div>
+    <div class='table-scroll'>
+      <table class='topology-table'>
+        <thead>
+          <tr>
+            <th>Site Link</th>
+            <th>Transporte</th>
+            <th>Custo</th>
+            <th>Intervalo (min)</th>
+            <th>Sites participantes</th>
+            <th>Servidores nos sites do link</th>
+          </tr>
+        </thead>
+        <tbody>
+          $($siteLinkRows -join "`n")
+        </tbody>
+      </table>
+    </div>
+    <div class='topology-note'>Um Site Link representa a conectividade lógica entre Sites. A coluna de servidores lista os Domain Controllers existentes em cada Site participante; os DCs não são membros diretos do objeto Site Link.</div>
+  </section>
+"@
+
 # Gera a seção visual de sistema operacional e manutenção dos Domain Controllers.
 $inventoryRows = foreach ($r in $ResultsArr) {
   $dcHtml       = [System.Net.WebUtility]::HtmlEncode([string]$r.Identity)
@@ -1226,6 +1661,8 @@ $htmlHeader = @"
     se o servidor não responde, marcamos <i>NoReply</i>. Isso não significa necessariamente porta fechada: ela pode estar 
     aberta porém silenciosa ou filtrada por firewall. Para conectividade crítica do Active Directory, priorize os resultados TCP.
   </div>
+
+  $adTopologySection
 
   $inventorySection
 
