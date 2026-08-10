@@ -1,5 +1,5 @@
 <# 
-AD Health Check – PS 5.1/7 – Layout v5
+AD Health Check – PS 5.1/7 – Layout v6
 - Criado por Eduardo Popovici e disponível em seu repositório GitHub
 - Script criado e disponibilizado para a comunidade Microsoft
 - Ping via ping.exe
@@ -12,6 +12,7 @@ AD Health Check – PS 5.1/7 – Layout v5
 - Inventário por DC: edição, versão e build do Windows Server
 - Manutenção por DC: último HotFix/KB detectado e última inicialização (reboot)
 - Topologia AD: FSMO, níveis funcionais, Sites e Site Links de replicação
+- Rede por DC: quantidade de interfaces IP habilitadas, endereços IPv4/IPv6 e prefixo CIDR
 #>
 
 [CmdletBinding()]
@@ -308,6 +309,91 @@ function Get-ServerInventorySafe {
     LastUpdateDate = $lastUpdateDate
     LastUpdateKB   = $lastUpdateKB
     LastRebootDate = $lastRebootDate
+  }
+}
+
+function Convert-SubnetMaskToPrefixLength {
+  param([string]$SubnetMask)
+
+  if ([string]::IsNullOrWhiteSpace($SubnetMask)) { return $null }
+  $SubnetMask = $SubnetMask.Trim()
+
+  # IPv6 normalmente já retorna o prefixo (por exemplo, 64) em IPSubnet.
+  $numericPrefix = 0
+  if ([int]::TryParse($SubnetMask, [ref]$numericPrefix)) {
+    if ($numericPrefix -ge 0 -and $numericPrefix -le 128) { return $numericPrefix }
+  }
+
+  # IPv4 em máscara decimal pontuada, por exemplo 255.255.255.0 -> /24.
+  if ($SubnetMask -match '^\d{1,3}(\.\d{1,3}){3}$') {
+    try {
+      $bits = ''
+      foreach ($octetText in ($SubnetMask -split '\.')) {
+        $octet = [int]$octetText
+        if ($octet -lt 0 -or $octet -gt 255) { return $null }
+        $bits += [Convert]::ToString($octet, 2).PadLeft(8, '0')
+      }
+
+      # Garante que a máscara seja contígua (111...000...).
+      if ($bits -notmatch '^1*0*$') { return $null }
+      return ($bits.ToCharArray() | Where-Object { $_ -eq '1' }).Count
+    } catch { return $null }
+  }
+
+  return $null
+}
+
+function Get-ServerNetworkInventorySafe {
+  param([Parameter(Mandatory)][string]$ComputerName)
+
+  $adapterConfigs = @(
+    Get-RemoteCimDataSafe -ComputerName $ComputerName -ClassName 'Win32_NetworkAdapterConfiguration' |
+      Where-Object { $_.IPEnabled -eq $true }
+  )
+
+  if ($adapterConfigs.Count -eq 0) {
+    return [pscustomobject]@{
+      InterfaceCount = 'Unknown'
+      Summary        = 'Não foi possível consultar interfaces IP habilitadas.'
+      Interfaces     = @()
+    }
+  }
+
+  $interfaces = foreach ($adapter in $adapterConfigs) {
+    $adapterName = if ($adapter.Description) { ([string]$adapter.Description).Trim() } else { 'Interface sem descrição' }
+    $ipList      = @($adapter.IPAddress)
+    $subnetList  = @($adapter.IPSubnet)
+    $formattedAddresses = @()
+
+    for ($i = 0; $i -lt $ipList.Count; $i++) {
+      $ip = [string]$ipList[$i]
+      if ([string]::IsNullOrWhiteSpace($ip)) { continue }
+      if ($ip -eq '127.0.0.1' -or $ip -eq '::1') { continue }
+
+      $subnet = if ($i -lt $subnetList.Count) { [string]$subnetList[$i] } else { '' }
+      $prefix = Convert-SubnetMaskToPrefixLength -SubnetMask $subnet
+
+      if ($null -ne $prefix) {
+        $formattedAddresses += ("{0}/{1}" -f $ip, $prefix)
+      } else {
+        $formattedAddresses += $ip
+      }
+    }
+
+    [pscustomobject]@{
+      Name      = $adapterName
+      Addresses = if ($formattedAddresses.Count -gt 0) { $formattedAddresses -join ', ' } else { '(sem endereço IP válido)' }
+    }
+  }
+
+  $summary = @(
+    $interfaces | ForEach-Object { "{0}: {1}" -f $_.Name, $_.Addresses }
+  ) -join ' | '
+
+  [pscustomobject]@{
+    InterfaceCount = $interfaces.Count
+    Summary        = $summary
+    Interfaces     = @($interfaces)
   }
 }
 
@@ -610,6 +696,9 @@ $ResultsArr = foreach ($dcFqdn in $DCServers) {
   # Sistema operacional / manutenção
   $serverInfo = Get-ServerInventorySafe -ComputerName $target
 
+  # Interfaces e endereçamento de rede
+  $networkInfo = Get-ServerNetworkInventorySafe -ComputerName $target
+
   # Serviços
   $netlogon = Get-ServiceStatusSafe -ComputerName $target -ServiceName 'Netlogon'
   $ntds     = Get-ServiceStatusSafe -ComputerName $target -ServiceName 'NTDS'
@@ -671,8 +760,11 @@ $ResultsArr = foreach ($dcFqdn in $DCServers) {
     OSBuild           = $serverInfo.OSBuild
     LastUpdateDate    = $serverInfo.LastUpdateDate
     LastUpdateKB      = $serverInfo.LastUpdateKB
-    LastRebootDate    = $serverInfo.LastRebootDate
-    PingStatus        = $pingStatus
+    LastRebootDate       = $serverInfo.LastRebootDate
+    NetworkInterfaceCount = $networkInfo.InterfaceCount
+    NetworkAddresses      = $networkInfo.Summary
+    NetworkInterfaces     = $networkInfo.Interfaces
+    PingStatus            = $pingStatus
     NetlogonService   = $netlogon
     NTDSService       = $ntds
     DNSServiceStatus  = $dnsSvc
@@ -1185,6 +1277,69 @@ $css = @"
     white-space: nowrap;
   }
 
+  .network-panel {
+    border-left: 4px solid #008272;
+  }
+
+  .network-panel .panel-header {
+    background: #f3fbf9;
+  }
+
+  .network-table {
+    min-width: 980px !important;
+  }
+
+  .network-table th,
+  .network-table td {
+    font-size: 11px;
+  }
+
+  .network-table thead th {
+    position: static !important;
+    background: #008272;
+    color: #ffffff;
+    height: auto;
+  }
+
+  .network-table td {
+    text-align: left;
+    white-space: normal;
+    line-height: 1.5;
+    vertical-align: top;
+  }
+
+  .network-table .network-dc {
+    min-width: 210px;
+    font-weight: 650;
+    color: #24364b;
+  }
+
+  .network-table .network-count {
+    min-width: 110px;
+    text-align: center;
+    white-space: nowrap;
+    font-weight: 650;
+  }
+
+  .network-table .network-interface {
+    min-width: 300px;
+    font-weight: 650;
+  }
+
+  .network-table .network-addresses {
+    min-width: 360px;
+    font-family: Consolas, "Courier New", monospace;
+  }
+
+  .network-note {
+    padding: 12px 18px;
+    background: #f7fcfb;
+    border-top: 1px solid #dcefeb;
+    color: #5b6472;
+    font-size: 11px;
+    line-height: 1.5;
+  }
+
   .failure-panel {
     border-left: 4px solid #d13438;
   }
@@ -1549,6 +1704,56 @@ $inventorySection = @"
   </section>
 "@
 
+# Gera a seção visual de interfaces e endereçamento de rede dos Domain Controllers.
+$networkRows = foreach ($r in $ResultsArr) {
+  $dcHtml    = [System.Net.WebUtility]::HtmlEncode([string]$r.Identity)
+  $countHtml = [System.Net.WebUtility]::HtmlEncode([string]$r.NetworkInterfaceCount)
+  $interfaces = @($r.NetworkInterfaces)
+
+  if ($interfaces.Count -gt 0) {
+    $first = $true
+    foreach ($nic in $interfaces) {
+      $nameHtml = [System.Net.WebUtility]::HtmlEncode([string]$nic.Name)
+      $addressesHtml = [System.Net.WebUtility]::HtmlEncode([string]$nic.Addresses)
+
+      if ($first) {
+        "<tr><td class='network-dc' rowspan='$($interfaces.Count)'>$dcHtml</td><td class='network-count' rowspan='$($interfaces.Count)'>$countHtml</td><td class='network-interface'>$nameHtml</td><td class='network-addresses'>$addressesHtml</td></tr>"
+        $first = $false
+      } else {
+        "<tr><td class='network-interface'>$nameHtml</td><td class='network-addresses'>$addressesHtml</td></tr>"
+      }
+    }
+  } else {
+    $summaryHtml = [System.Net.WebUtility]::HtmlEncode([string]$r.NetworkAddresses)
+    "<tr><td class='network-dc'>$dcHtml</td><td class='network-count'>$countHtml</td><td colspan='2'>$summaryHtml</td></tr>"
+  }
+}
+
+$networkSection = @"
+  <section class='panel network-panel'>
+    <div class='panel-header'>
+      <h2 class='panel-title'>Interfaces e Endereçamento de Rede dos Domain Controllers</h2>
+      <span class='legend-badge ok'>&#127760; Rede</span>
+    </div>
+    <div class='table-scroll'>
+      <table class='network-table'>
+        <thead>
+          <tr>
+            <th>Domain Controller</th>
+            <th>Interfaces com IP</th>
+            <th>Interface</th>
+            <th>Endereços IP / CIDR</th>
+          </tr>
+        </thead>
+        <tbody>
+          $($networkRows -join "`n")
+        </tbody>
+      </table>
+    </div>
+    <div class='network-note'>São contabilizadas interfaces com IP habilitado. Os endereços são apresentados com o prefixo CIDR correspondente, por exemplo 192.168.10.20/24. Endereços de loopback são ignorados.</div>
+  </section>
+"@
+
 # Gera a seção visual de falhas identificadas.
 if ($FailureItems.Count -gt 0) {
   $failureRows = foreach ($failure in $FailureItems) {
@@ -1665,6 +1870,8 @@ $htmlHeader = @"
   $adTopologySection
 
   $inventorySection
+
+  $networkSection
 
   $failureSection
 
